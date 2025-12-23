@@ -44,6 +44,7 @@
             user-select: none;
         }
 
+        /* Wrapper for scaling */
         .app-root {
             transition: transform 0.2s ease;
             transform-origin: top center;
@@ -69,6 +70,7 @@
         
         .sim-header-right { font-size: 0.7rem; opacity: 0.7; }
 
+        /* --- Main Game Layout --- */
         .game-wrapper {
             display: flex;
             align-items: flex-start;
@@ -78,6 +80,7 @@
             max-width: 1200px;
         }
 
+        /* --- Side Panels --- */
         .side-panel {
             width: 200px;
             background: rgba(10, 20, 30, 0.6);
@@ -108,6 +111,7 @@
         .tut-label { color: #fff; font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.75rem; }
         .tut-desc { line-height: 1.3; margin-top: 6px; color: #aaa; }
 
+        /* Pattern Mini-Grids */
         .mini-grid {
             display: grid;
             gap: 2px;
@@ -133,6 +137,7 @@
             .side-panel { display: none; }
         }
 
+        /* --- Center Column --- */
         .game-center {
             display: flex;
             flex-direction: column;
@@ -178,6 +183,7 @@
 
         .player-label { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
 
+        /* Compact Resources */
         .resources-row {
             display: flex;
             gap: 5px;
@@ -199,6 +205,7 @@
         .res-val { font-size: 1rem; font-weight: bold; line-height: 1; }
         .res-icon { font-size: 0.9rem; margin-bottom: 2px; display: block; }
 
+        /* --- Status Bar --- */
         .status-bar {
             width: 100%;
             display: flex;
@@ -228,6 +235,7 @@
         @keyframes blink-slow { 50% { opacity: 0.6; } }
         @keyframes blink-fast { from { opacity: 1; text-shadow: 0 0 10px currentColor; } to { opacity: 0.5; } }
 
+        /* --- Board --- */
         .board-container {
             position: relative;
             padding: 4px;
@@ -247,6 +255,7 @@
             border-top: 1px solid var(--grid-color);
             border-left: 1px solid var(--grid-color);
             cursor: crosshair;
+            transition: opacity 0.5s;
         }
         
         .cell {
@@ -274,7 +283,11 @@
 
         .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
         .board.targeting .cell.invalid-target:hover { background: rgba(255, 0, 0, 0.2); box-shadow: inset 0 0 10px red; cursor: not-allowed; }
-        .board.targeting-boosted .cell:hover { background: rgba(217, 70, 239, 0.2); box-shadow: inset 0 0 15px var(--text-boost); }
+        
+        .board.targeting-boosted .cell:hover { 
+            background: rgba(217, 70, 239, 0.2); 
+            box-shadow: inset 0 0 15px var(--text-boost); 
+        }
 
         .piece {
             width: 60%; height: 60%; border-radius: 50%;
@@ -298,8 +311,12 @@
             box-shadow: 0 0 0 3px currentColor, 0 0 15px currentColor;
             width: 65%; height: 65%; 
         }
+        .piece.p1.scored { color: var(--scored-p1); }
+        .piece.p2.scored { color: var(--scored-p2); }
 
-        .piece.square-flash { animation: flash-square 0.5s ease-out; }
+        .piece.square-flash {
+            animation: flash-square 0.5s ease-out;
+        }
         @keyframes flash-square {
             0% { transform: scale(1); filter: brightness(1); }
             50% { transform: scale(1.3); filter: brightness(2); box-shadow: 0 0 20px #fff; }
@@ -313,9 +330,20 @@
             box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor;
             z-index: 5;
         }
-        .piece.bunker.scored { background: transparent !important; box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor; }
-        .piece.bunker.forming { animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes bunker-lock { 0% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(0.8); } 100% { transform: scale(1); opacity: 1; } }
+        
+        .piece.bunker.scored {
+            background: transparent !important;
+            box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor;
+        }
+        
+        .piece.bunker.forming {
+            animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes bunker-lock {
+            0% { transform: scale(1.2); opacity: 0.5; }
+            50% { transform: scale(0.8); }
+            100% { transform: scale(1); opacity: 1; }
+        }
 
         .controls-area {
             width: 100%; margin-top: 15px;
@@ -345,6 +373,8 @@
 
         @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.8; transform: scale(0.98); } 100% { opacity: 1; } }
 
+        .btn-system { border-color: #1a3c5a; }
+
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 100;
@@ -355,6 +385,7 @@
         .modal { border: 2px solid var(--text-main); padding: 40px; text-align: center; background: #050a10; min-width: 300px;}
         .modal h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: var(--text-main); }
         .modal-btn-group { display: flex; flex-direction: column; gap: 15px; }
+        .btn-view-board { border-color: #666; color: #aaa; }
         
         .setting-row { margin-bottom: 20px; text-align: left; }
         .setting-label { display: block; margin-bottom: 10px; font-size: 0.8rem; color: #aaa; }
@@ -373,13 +404,15 @@
 <body>
 
 <div class="app-root" id="app-root">
+
     <h1>
         <span>WAR ROOM // SYMMETRIC</span>
-        <span class="sim-header-right">V.6.0 [MP_REFACTOR]</span>
+        <span class="sim-header-right">V.5.2 [INFINITE_BONUS_FIX]</span>
     </h1>
 
     <div class="game-wrapper">
-        <div class="side-panel">
+        
+        <div class="side-panel tutorial-panel">
             <h3>PATTERNS</h3>
             <div class="tut-item">
                 <span class="tut-label">5-IN-ROW</span>
@@ -431,7 +464,7 @@
             </div>
 
             <div class="status-bar">
-                <div id="status-text" class="status-text">INITIALIZING...</div>
+                <div id="status-text" class="status-text">INITIALIZING SIMULATION...</div>
                 <div id="iso-indicator" class="isolation-indicator">ISOLATION: CHECKING</div>
             </div>
 
@@ -443,358 +476,394 @@
                 <div class="panel">
                     <h3>ARSENAL</h3>
                     <div class="btn-group">
-                        <button id="btn-nuke" class="btn-nuke" onclick="game.uiToggleNuke()">LAUNCH ICBM</button>
-                        <button id="btn-boost" class="btn-boost" onclick="game.uiToggleBoost()">ENGAGE BOOSTER</button>
+                        <button id="btn-nuke" class="btn-nuke" onclick="game.toggleTargeting()">LAUNCH ICBM</button>
+                        <button id="btn-boost" class="btn-boost" onclick="game.toggleBoost()">ENGAGE BOOSTER</button>
                     </div>
                 </div>
                 <div class="panel">
                     <h3>SYSTEM</h3>
                     <div class="btn-group">
                         <button class="btn-system" onclick="game.openSettings()">SETTINGS</button>
-                        <button class="btn-system" onclick="game.saveToLocal()">SAVE</button>
-                        <button class="btn-system" onclick="game.loadFromLocal()">LOAD</button>
+                        <button class="btn-system" onclick="game.saveGame()">SAVE</button>
+                        <button class="btn-system" onclick="game.loadGame()">LOAD</button>
                         <button class="btn-system" onclick="game.resetRound()">RESET</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="side-panel">
+        <div class="side-panel tutorial-panel">
             <h3>ORDNANCE</h3>
-            <div class="tut-item"><span class="tut-label">BUNKERS</span><div class="tut-desc">Immune to Standard Nukes.</div></div>
-            <div class="tut-item"><span class="tut-label">BOOSTED NUKE</span><div class="tut-desc">Radius 2. Destroys Bunkers.</div></div>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="overlay">
-    <div class="modal">
-        <h2 id="winner-title">VICTORY</h2>
-        <div class="modal-btn-group">
-            <button class="btn-system" onclick="game.resetRound()">RESTART SIMULATION</button>
-            <button class="btn-system" style="border-color:#666" onclick="document.getElementById('overlay').classList.remove('visible')">VIEW BOARD</button>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="settings-overlay">
-    <div class="modal">
-        <h2>SYSTEM SETTINGS</h2>
-        <div class="setting-row">
-            <span class="setting-label">MAP SIZE</span>
-            <div class="btn-group">
-                <button onclick="game.setMapSize(13)">13x13</button>
-                <button onclick="game.setMapSize(15)">15x15</button>
-                <button onclick="game.setMapSize(19)">19x19</button>
+            <div class="tut-item">
+                <span class="tut-label">STANDARD NUKE</span>
+                <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">BOOSTED NUKE</span>
+                <div class="tut-desc">Radius 2 (Diamond).<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
+            </div>
+            <h3>STRUCTURES</h3>
+            <div class="tut-item">
+                <span class="tut-label">BUNKERS</span>
+                <div class="tut-desc">Immune to Standard Nukes.<br>Created by (+) Pattern.</div>
             </div>
         </div>
-        <div class="setting-row">
-            <span class="setting-label">UI SCALE</span>
-            <input type="range" min="0.7" max="1.3" step="0.1" value="1" oninput="game.setScale(this.value)">
-        </div>
-        <button class="btn-system" onclick="document.getElementById('settings-overlay').classList.remove('visible')">CLOSE</button>
+
     </div>
+
 </div>
-<div id="toast" class="toast"></div>
+
+    <div class="overlay" id="overlay">
+        <div class="modal">
+            <h2 id="winner-title">VICTORY</h2>
+            <div class="modal-btn-group">
+                <button class="btn-system" onclick="game.resetRound()">RESTART SIMULATION</button>
+                <button class="btn-view-board" onclick="game.hideOverlay()">VIEW BOARD STATE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay" id="settings-overlay">
+        <div class="modal">
+            <h2>SYSTEM SETTINGS</h2>
+            
+            <div class="setting-row">
+                <span class="setting-label">MAP SIZE (RESETS GAME)</span>
+                <div class="btn-group">
+                    <button onclick="game.setMapSize(13)">13x13 (SKIRMISH)</button>
+                    <button onclick="game.setMapSize(15)">15x15 (STANDARD)</button>
+                    <button onclick="game.setMapSize(19)">19x19 (GLOBAL)</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">UI SCALE</span>
+                <div class="range-wrap">
+                    <span>70%</span>
+                    <input type="range" min="0.7" max="1.3" step="0.1" value="1" oninput="game.setScale(this.value)">
+                    <span>130%</span>
+                </div>
+            </div>
+
+            <button class="btn-system" onclick="document.getElementById('settings-overlay').classList.remove('visible')">CLOSE</button>
+        </div>
+    </div>
+    
+    <div id="toast" class="toast"></div>
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v6.0
- * Refactored for Multiplayer capability.
- * All state changes now pass through applyMove().
+ * CONNECT 5: WAR ROOM v5.2
+ * Fix: Infinite Bonus Turn bug.
+ * Patterns trigger simultaneously, and bonus turns are properly consumed.
  */
 
 class SoundSystem {
     constructor() { this.ctx = null; }
-    init() { if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; this.ctx = new AC(); } if (this.ctx.state === 'suspended') this.ctx.resume(); }
-    playTone(f, t, d, v=0.1) {
-        if (!this.ctx) return;
-        const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
-        o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-        g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
-        o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime + d);
+    init() {
+        if (!this.ctx) {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
     }
-    playNoise(d, v=0.2) {
+    playTone(freq, type, duration, vol=0.1) {
         if (!this.ctx) return;
-        const b = this.ctx.createBuffer(1, this.ctx.sampleRate * d, this.ctx.sampleRate);
-        const data = b.getChannelData(0); for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        const s = this.ctx.createBufferSource(); s.buffer = b;
-        const g = this.ctx.createGain(); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
-        s.connect(g); g.connect(this.ctx.destination); s.start();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + duration);
     }
-    playPlace() { this.playTone(600, 'sine', 0.1); }
-    playBonus() { this.playTone(800, 'square', 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2), 100); }
-    playScore() { this.playTone(400, 'sawtooth', 0.1); setTimeout(() => this.playTone(600, 'sawtooth', 0.1), 100); setTimeout(() => this.playTone(900, 'sawtooth', 0.4), 200); }
-    playNuke() { this.playNoise(0.5); }
+    playNoise(duration, vol=0.2) {
+        if (!this.ctx) return;
+        const bufferSize = this.ctx.sampleRate * duration;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+        noise.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start();
+    }
+    playPlace() { this.playTone(600, 'sine', 0.1, 0.1); }
+    playBonus() { this.playTone(800, 'square', 0.1, 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2, 0.1), 100); }
+    playScore() { this.playTone(400, 'sawtooth', 0.1, 0.1); setTimeout(() => this.playTone(600, 'sawtooth', 0.1, 0.1), 100); setTimeout(() => this.playTone(900, 'sawtooth', 0.4, 0.1), 200); }
+    playNuke() { this.playNoise(0.5, 0.3); }
     playBunker() { this.playTone(150, 'square', 0.4, 0.2); }
-    playError() { this.playTone(150, 'sawtooth', 0.2); }
+    playError() { this.playTone(150, 'sawtooth', 0.2, 0.1); }
 }
 
-const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5, P2_BUNKER: 6, P1_BUNKER_SCORED: 7, P2_BUNKER_SCORED: 8, CRATER: 9 };
+const STATE = {
+    EMPTY: 0,
+    P1: 1,      
+    P2: 2,      
+    P1_SCORED: 3,
+    P2_SCORED: 4,
+    P1_BUNKER: 5, 
+    P2_BUNKER: 6,
+    P1_BUNKER_SCORED: 7, 
+    P2_BUNKER_SCORED: 8, 
+    CRATER: 9
+};
 
 class Connect5 {
     constructor() {
-        // Initial Constants
         this.mapSize = 15;
+        this.rows = this.mapSize;
+        this.cols = this.mapSize;
+        this.grid = [];
+        this.currentPlayer = 1; 
+        this.scores = { 1: 0, 2: 0 };
+        this.nukes = { 1: 0, 2: 0 };    
+        this.boosters = { 1: 0, 2: 0 };
+        this.bunkers = { 1: 0, 2: 0 }; 
+        
+        this.gameActive = true;
         this.winningScore = 3;
+        this.bonusTurn = false;
+        this.ignoreIsolation = false; 
+        
+        this.targetingMode = false;
+        this.boostActive = false; 
+        
+        this.lastMove = null; 
+
+        this.boardElement = document.getElementById('board');
+        this.statusText = document.getElementById('status-text');
+        this.isoIndicator = document.getElementById('iso-indicator');
+        this.toast = document.getElementById('toast');
+        this.appRoot = document.getElementById('app-root');
+        
         this.sound = new SoundSystem();
         
-        // DOM References
-        this.boardElement = document.getElementById('board');
-
-        // Volatile State (Capturable by getState)
-        this.grid = [];
-        this.currentPlayer = 1;
-        this.scores = { 1: 0, 2: 0 };
-        this.nukes = { 1: 0, 2: 0 };
-        this.boosters = { 1: 0, 2: 0 };
-        this.bunkers = { 1: 0, 2: 0 };
-        this.bonusTurn = false;
-        this.ignoreIsolation = false;
-        this.lastMove = null;
-        this.gameActive = true;
-
-        // UI-only state (Not shared via getState)
-        this.uiTargetingMode = false;
-        this.uiBoostActive = false;
-
         this.init();
     }
 
+    getPlayerId(state) {
+        if (state === STATE.P1 || state === STATE.P1_SCORED || state === STATE.P1_BUNKER || state === STATE.P1_BUNKER_SCORED) return 1;
+        if (state === STATE.P2 || state === STATE.P2_SCORED || state === STATE.P2_BUNKER || state === STATE.P2_BUNKER_SCORED) return 2;
+        return 0;
+    }
+
     init() {
-        this.createBoard(this.mapSize);
+        if (!this.loadGame()) this.createBoard();
         this.updateUI();
-        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
+        this.checkIsolationAvailability(); 
+        document.body.addEventListener('click', () => this.sound.init(), {once:true});
     }
 
-    // --- MULTIPLAYER CORE: STATE SERIALIZATION ---
-
-    getState() {
-        return {
-            grid: JSON.parse(JSON.stringify(this.grid)),
-            currentPlayer: this.currentPlayer,
-            scores: { ...this.scores },
-            nukes: { ...this.nukes },
-            boosters: { ...this.boosters },
-            bunkers: { ...this.bunkers },
-            bonusTurn: this.bonusTurn,
-            ignoreIsolation: this.ignoreIsolation,
-            lastMove: this.lastMove ? { ...this.lastMove } : null,
-            gameActive: this.gameActive,
-            mapSize: this.mapSize
-        };
+    openSettings() { document.getElementById('settings-overlay').classList.add('visible'); }
+    setScale(val) { this.appRoot.style.transform = `scale(${val})`; }
+    setMapSize(size) {
+        this.mapSize = size;
+        this.rows = size;
+        this.cols = size;
+        this.resetRound(); 
+        document.getElementById('settings-overlay').classList.remove('visible');
     }
 
-    setState(state) {
-        this.grid = state.grid;
-        this.currentPlayer = state.currentPlayer;
-        this.scores = state.scores;
-        this.nukes = state.nukes;
-        this.boosters = state.boosters;
-        this.bunkers = state.bunkers;
-        this.bonusTurn = state.bonusTurn;
-        this.ignoreIsolation = state.ignoreIsolation;
-        this.lastMove = state.lastMove;
-        this.gameActive = state.gameActive;
-        this.mapSize = state.mapSize;
-
-        // Refresh visuals
+    createBoard() {
+        this.boardElement.innerHTML = '';
+        this.boardElement.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+        this.grid = Array(this.rows).fill().map(() => Array(this.cols).fill(STATE.EMPTY));
         this.renderBoard();
-        this.updateUI();
-        if (!this.gameActive) this.showEndScreen();
     }
 
-    // --- MULTIPLAYER CORE: ACTION HANDLING ---
+    renderBoard() {
+        this.boardElement.innerHTML = '';
+        this.boardElement.style.gridTemplateColumns = `repeat(${this.cols}, 1fr)`;
+        for (let r = 0; r < this.rows; r++) {
+            for (let c = 0; c < this.cols; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = () => this.handleInteraction(r, c);
+                this.boardElement.appendChild(cell);
+                this.updateCellVisual(r, c);
+            }
+        }
+    }
 
-    applyMove(move) {
+    handleInteraction(r, c) {
         if (!this.gameActive) return;
+        if (this.targetingMode) this.executeNuke(r, c);
+        else this.executeMove(r, c);
+    }
 
-        if (move.type === 'place') {
-            this.internalExecutePlace(move.r, move.c);
-        } else if (move.type === 'nuke') {
-            this.internalExecuteNuke(move.r, move.c, move.boosted);
+    executeMove(r, c) {
+        if (this.grid[r][c] !== STATE.EMPTY) {
+            if (this.grid[r][c] === STATE.CRATER) {
+                this.showToast("SECTOR DESTROYED.");
+                this.sound.playError();
+            }
+            return;
         }
 
-        // Logic finished, update local UI
-        this.updateUI();
-    }
-
-    // UI Input Handlers
-    handleCellClick(r, c) {
-        if (this.uiTargetingMode) {
-            this.applyMove({ type: 'nuke', r, c, boosted: this.uiBoostActive });
-        } else {
-            this.applyMove({ type: 'place', r, c });
-        }
-    }
-
-    uiToggleNuke() {
-        if (this.nukes[this.currentPlayer] <= 0) { this.showToast("SILOS EMPTY"); this.sound.playError(); return; }
-        this.uiTargetingMode = !this.uiTargetingMode;
-        if (!this.uiTargetingMode) this.uiBoostActive = false;
-        this.updateUI();
-    }
-
-    uiToggleBoost() {
-        if (this.boosters[this.currentPlayer] <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
-        this.uiBoostActive = !this.uiBoostActive;
-        this.updateUI();
-    }
-
-    // --- INTERNAL LOGIC (Private to class) ---
-
-    internalExecutePlace(r, c) {
-        if (this.grid[r][c] !== STATE.EMPTY) { this.sound.playError(); return; }
         if (this.bonusTurn && !this.ignoreIsolation && !this.isIsolated(r, c)) {
-            this.showToast("BONUS PIECE MUST BE ISOLATED");
+            this.showToast("DEPLOYMENT ERROR: Bonus piece must be isolated.");
             this.sound.playError();
             return;
         }
 
         const prevMove = this.lastMove;
         this.grid[r][c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
-        this.lastMove = { r, c };
+        this.lastMove = {r, c};
         this.sound.playPlace();
         
-        this.updateCellVisual(r, c);
-        if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c);
+        this.updateCellVisual(r, c); 
+        if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c); 
 
-        this.resolvePostMove(r, c);
+        this.resolveTurn(r, c);
     }
 
-    internalExecuteNuke(r, c, boosted) {
-        // Validation logic
-        if (this.nukes[this.currentPlayer] < 1) return;
-        if (boosted && this.boosters[this.currentPlayer] < 1) return;
-        
-        if (!boosted) {
-            if (this.getPlayerId(this.grid[r][c]) !== this.currentPlayer) {
-                this.showToast("INVALID TARGET: ALLIED UNIT REQUIRED");
-                this.sound.playError();
-                return;
-            }
-        }
-
-        const affected = [];
-        const radius = boosted ? 2 : 1;
-        for (let dr = -radius; dr <= radius; dr++) {
-            for (let dc = -radius; dc <= radius; dc++) {
-                if (Math.abs(dr) + Math.abs(dc) <= radius && this.isValid(r+dr, c+dc)) {
-                    affected.push({ r: r+dr, c: c+dc });
-                }
-            }
-        }
-
-        this.sound.playNuke();
-        document.querySelector('.board-container').classList.add('impact');
-        
-        // Immediate state update (In multiplayer, we want results to be deterministic)
-        affected.forEach(pos => {
-            const s = this.grid[pos.r][pos.c];
-            const isBunker = (s >= 5 && s <= 8);
-            if (!isBunker || boosted) {
-                const owner = this.getPlayerId(s);
-                if (isBunker && owner > 0) this.bunkers[owner]--;
-                this.grid[pos.r][pos.c] = STATE.CRATER;
-            }
-        });
-
-        this.nukes[this.currentPlayer]--;
-        if (boosted) this.boosters[this.currentPlayer]--;
-        
-        // Clear UI flags after successful move
-        this.uiTargetingMode = false;
-        this.uiBoostActive = false;
-        this.bonusTurn = false;
-        
-        setTimeout(() => {
-            document.querySelector('.board-container').classList.remove('impact');
-            this.renderBoard();
-            this.switchTurn();
-        }, 350);
-    }
-
-    resolvePostMove(r, c) {
+    resolveTurn(r, c) {
         const player = this.currentPlayer;
+        
         const scored = this.checkScoring(r, c);
         
-        if (this.checkBoardFull()) { this.endRound("FULL"); return; }
+        if (this.checkBoardFull()) {
+            this.endRound("FULL");
+            return;
+        }
+        
         if (scored) {
             this.bonusTurn = false;
             this.ignoreIsolation = false;
             this.sound.playScore();
-            if (this.scores[player] >= this.winningScore) { this.endRound("SCORE"); return; }
-            this.switchTurn();
+            if (this.scores[player] >= this.winningScore) {
+                this.endRound("SCORE");
+                return;
+            }
+            this.switchTurn(); 
             return;
-        }
+        } 
+        
+        let patternMessages = [];
+        let triggeredBonusThisAction = false;
 
-        let triggers = [];
-        let earnedBonus = false;
-
-        const plus = this.checkForPlus(r, c);
-        if (plus) {
+        const plusCoords = this.checkForPlusPattern(r, c);
+        if (plusCoords) {
             this.boosters[player]++;
             this.sound.playBunker();
-            plus.forEach(pos => {
-                const s = this.grid[pos.r][pos.c];
-                const scored = (s === 3 || s === 4 || s === 7 || s === 8);
-                const wasBunker = (s >= 5 && s <= 8);
+            
+            const bunkerState = player === 1 ? STATE.P1_BUNKER : STATE.P2_BUNKER;
+            const bunkerScored = player === 1 ? STATE.P1_BUNKER_SCORED : STATE.P2_BUNKER_SCORED;
+
+            plusCoords.forEach(({r, c}) => {
+                const s = this.grid[r][c];
+                const isScored = (s === STATE.P1_SCORED || s === STATE.P2_SCORED || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
+                const newState = isScored ? bunkerScored : bunkerState;
+                const wasBunker = (s === STATE.P1_BUNKER || s === STATE.P2_BUNKER || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
                 if (!wasBunker) this.bunkers[player]++;
-                this.grid[pos.r][pos.c] = player === 1 ? (scored ? 7 : 5) : (scored ? 8 : 6);
-                this.updateCellVisual(pos.r, pos.c, true);
+                this.grid[r][c] = newState;
+                this.updateCellVisual(r, c);
+                const cell = this.getCell(r, c);
+                const piece = cell.querySelector('.piece');
+                if(piece) piece.classList.add('forming'); 
             });
-            triggers.push("BUNKERS ESTABLISHED");
+            patternMessages.push("BUNKERS ESTABLISHED");
         }
 
+        // Only allow a bonus turn if one isn't ALREADY active (prevents stacking/infinite loops)
         if (!this.bonusTurn) {
-            const square = this.checkForSquare(r, c);
-            if (square) {
-                earnedBonus = true;
+            const squareCoords = this.checkForSquarePattern(r, c);
+            if (squareCoords) {
+                triggeredBonusThisAction = true;
                 this.sound.playBonus();
-                square.forEach(pos => this.getCell(pos.r, pos.c).querySelector('.piece')?.classList.add('square-flash'));
-                triggers.push("BONUS TURN");
+                squareCoords.forEach(({r, c}) => {
+                    const cell = this.getCell(r, c);
+                    const piece = cell.querySelector('.piece');
+                    if (piece) piece.classList.add('square-flash');
+                });
+                patternMessages.push(`BONUS TURN`);
             }
         }
+        
+        if (patternMessages.length > 0) {
+            this.showToast(patternMessages.join(" + "));
+            this.updateUI();
+        }
 
-        if (triggers.length) this.showToast(triggers.join(" + "));
-
-        if (earnedBonus) {
+        if (triggeredBonusThisAction) {
             this.bonusTurn = true;
             this.checkIsolationAvailability();
             this.updateUI();
-        } else if (this.bonusTurn) {
+            return; 
+        }
+
+        // If we were already in a bonus turn, it is now consumed
+        if (this.bonusTurn) {
             this.bonusTurn = false;
             this.ignoreIsolation = false;
             this.switchTurn();
         } else {
+            // Normal turn end
             this.switchTurn();
         }
     }
 
-    // --- LOGIC HELPERS ---
-
     switchTurn() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.uiTargetingMode = false;
-        this.uiBoostActive = false;
-        this.checkIsolationAvailability();
+        this.targetingMode = false;
+        this.boostActive = false; 
+        this.boardElement.classList.remove('targeting', 'targeting-boosted');
         this.updateUI();
+        this.checkIsolationAvailability();
     }
 
-    getPlayerId(s) {
-        if (s === 1 || s === 3 || s === 5 || s === 7) return 1;
-        if (s === 2 || s === 4 || s === 6 || s === 8) return 2;
-        return 0;
+    checkBoardFull() {
+        return this.grid.every(row => row.every(cell => cell !== STATE.EMPTY));
     }
 
-    isValid(r, c) { return r >= 0 && r < this.mapSize && c >= 0 && c < this.mapSize; }
+    checkIsolationAvailability() {
+        if (!this.bonusTurn) {
+            this.isoIndicator.textContent = "";
+            this.isoIndicator.classList.remove('available');
+            return;
+        }
+
+        let possible = false;
+        for(let r=0; r<this.rows; r++){
+            for(let c=0; c<this.cols; c++){
+                if(this.grid[r][c] === STATE.EMPTY && this.isIsolated(r, c)) {
+                    possible = true;
+                    break;
+                }
+            }
+            if(possible) break;
+        }
+
+        if (!possible) {
+            this.ignoreIsolation = true; 
+            this.isoIndicator.textContent = "ISOLATION: IMPOSSIBLE";
+            this.isoIndicator.style.color = "var(--text-boost)";
+            this.isoIndicator.classList.remove('available'); 
+        } else {
+            this.isoIndicator.textContent = "ISOLATION: POSSIBLE";
+            this.isoIndicator.classList.add('available');
+            this.isoIndicator.style.color = "";
+        }
+    }
 
     isIsolated(r, c) {
         for (let dr = -1; dr <= 1; dr++) {
             for (let dc = -1; dc <= 1; dc++) {
                 if (dr === 0 && dc === 0) continue;
-                if (this.isValid(r+dr, c+dc)) {
-                    const s = this.grid[r+dr][c+dc];
+                const nr = r + dr;
+                const nc = c + dc;
+                if (this.isValid(nr, nc)) {
+                    const s = this.grid[nr][nc];
                     if (s !== STATE.EMPTY && s !== STATE.CRATER) return false;
                 }
             }
@@ -802,149 +871,230 @@ class Connect5 {
         return true;
     }
 
-    checkIsolationAvailability() {
-        if (!this.bonusTurn) return;
-        let possible = false;
-        for (let r=0; r<this.mapSize; r++) {
-            for (let c=0; c<this.mapSize; c++) {
-                if (this.grid[r][c] === STATE.EMPTY && this.isIsolated(r, c)) { possible = true; break; }
-            }
-            if (possible) break;
-        }
-        this.ignoreIsolation = !possible;
-    }
-
-    checkForSquare(r, c) {
-        const p = this.currentPlayer;
-        const offsets = [[-1,-1], [-1,0], [0,-1], [0,0]];
-        for (let [dr, dc] of offsets) {
+    checkForSquarePattern(r, c) {
+        const player = this.currentPlayer;
+        const corners = [[-1, -1], [-1, 0], [0, -1], [0, 0]]; 
+        for (let [dr, dc] of corners) {
+            const tr = r + dr, tc = c + dc;
+            let isSquare = true;
             let coords = [];
-            let match = true;
-            for (let i=0; i<2; i++) {
-                for (let j=0; j<2; j++) {
-                    const nr = r+dr+i, nc = c+dc+j;
-                    if (!this.isValid(nr, nc) || this.getPlayerId(this.grid[nr][nc]) !== p) { match = false; break; }
-                    coords.push({r:nr, c:nc});
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const nr = tr + i, nc = tc + j;
+                    if (!this.isValid(nr, nc)) { isSquare = false; break; }
+                    if (this.getPlayerId(this.grid[nr][nc]) !== player) { isSquare = false; }
+                    coords.push({r: nr, c: nc});
                 }
-                if (!match) break;
             }
-            if (match) return coords;
+            if (isSquare) return coords;
         }
         return null;
     }
 
-    checkForPlus(r, c) {
-        const p = this.currentPlayer;
-        const potential = [[0,0], [0,1], [0,-1], [1,0], [-1,0]];
-        for (let [dr, dc] of potential) {
-            const cr = r+dr, cc = c+dc;
-            if (!this.isValid(cr, cc)) continue;
-            const cs = this.grid[cr][cc];
-            if (cs === 5 || cs === 6 || cs === 7 || cs === 8) continue;
-            if (this.getPlayerId(cs) !== p) continue;
-            const arms = [[0,1], [0,-1], [1,0], [-1,0]];
-            if (arms.every(([ar, ac]) => this.isValid(cr+ar, cc+ac) && this.getPlayerId(this.grid[cr+ar][cc+ac]) === p)) {
-                return [[0,0], ...arms].map(([ar, ac]) => ({ r: cr+ar, c: cc+ac }));
+    checkForPlusPattern(r, c) {
+        const player = this.currentPlayer;
+        const bunkerState = player === 1 ? STATE.P1_BUNKER : STATE.P2_BUNKER;
+        const bunkerScored = player === 1 ? STATE.P1_BUNKER_SCORED : STATE.P2_BUNKER_SCORED;
+        const potentialCenters = [[0,0], [0,1], [0,-1], [1,0], [-1,0]];
+
+        for (let [dr, dc] of potentialCenters) {
+            const centerR = r + dr;
+            const centerC = c + dc;
+            if (this.isValid(centerR, centerC)) {
+                const centerS = this.grid[centerR][centerC];
+                if (centerS === bunkerState || centerS === bunkerScored) continue;
+                if (this.getPlayerId(centerS) !== player) continue;
+                const offsets = [[0,0], [0,1], [0,-1], [1,0], [-1,0]]; 
+                const arms = [[0,1], [0,-1], [1,0], [-1,0]];
+                const isPlus = arms.every(([ar, ac]) => {
+                    const armR = centerR + ar;
+                    const armC = centerC + ac;
+                    if (!this.isValid(armR, armC)) return false;
+                    return this.getPlayerId(this.grid[armR][armC]) === player;
+                });
+                if (isPlus) return offsets.map(([or, oc]) => ({r: centerR+or, c: centerC+oc}));
             }
         }
         return null;
     }
 
     checkScoring(r, c) {
-        const p = this.currentPlayer;
+        const player = this.currentPlayer;
         const directions = [[0,1], [1,0], [1,1], [1,-1]];
-        let found = false;
-        const countable = (s) => (this.getPlayerId(s) === p && s !== 3 && s !== 4 && s !== 7 && s !== 8);
+        let scored = false;
+        const unscoredNormal = player === 1 ? STATE.P1 : STATE.P2;
+        const unscoredBunker = player === 1 ? STATE.P1_BUNKER : STATE.P2_BUNKER;
+        const isCountable = (s) => (s === unscoredNormal || s === unscoredBunker);
+
+        const getLine = (dr, dc) => {
+            const line = [];
+            for(let i=1; i<5; i++) {
+                const nr = r - dr*i, nc = c - dc*i;
+                if (!this.isValid(nr, nc) || this.grid[nr][nc] === STATE.CRATER) break;
+                line.unshift({r: nr, c: nc, state: this.grid[nr][nc]});
+            }
+            line.push({r, c, state: this.grid[r][c]});
+            for(let i=1; i<5; i++) {
+                const nr = r + dr*i, nc = c + dc*i;
+                if (!this.isValid(nr, nc) || this.grid[nr][nc] === STATE.CRATER) break;
+                line.push({r: nr, c: nc, state: this.grid[nr][nc]});
+            }
+            return line;
+        };
 
         directions.forEach(([dr, dc]) => {
-            let line = [];
-            for (let i=-4; i<=4; i++) {
-                const nr = r+dr*i, nc = c+dc*i;
-                if (this.isValid(nr, nc) && this.grid[nr][nc] !== STATE.CRATER) line.push({ r: nr, c: nc, s: this.grid[nr][nc] });
-                else if (i < 0) line = []; else if (i > 0) break;
-            }
-            for (let i=0; i <= line.length - 5; i++) {
-                const seg = line.slice(i, i+5);
-                if (seg.every(cell => countable(cell.s))) {
-                    this.applyScoreSegment(seg);
-                    found = true;
+            const line = getLine(dr, dc);
+            for(let i=0; i <= line.length - 5; i++) {
+                const segment = line.slice(i, i+5);
+                const count = segment.filter(p => isCountable(p.state)).length;
+                if (count === 5) {
+                    this.applyScore(segment);
+                    scored = true;
                 }
             }
         });
-        return found;
+        return scored;
     }
 
-    applyScoreSegment(seg) {
+    applyScore(segment) {
         this.scores[this.currentPlayer]++;
-        if (this.scores[this.currentPlayer] === 1) this.nukes[this.currentPlayer]++;
-        else if (this.scores[this.currentPlayer] === 2) this.nukes[this.currentPlayer === 1 ? 2 : 1]++;
-        
-        seg.forEach(cell => {
-            const s = this.grid[cell.r][cell.c];
-            if (s === 1) this.grid[cell.r][cell.c] = 3;
-            else if (s === 2) this.grid[cell.r][cell.c] = 4;
-            else if (s === 5) this.grid[cell.r][cell.c] = 7;
-            else if (s === 6) this.grid[cell.r][cell.c] = 8;
-            this.updateCellVisual(cell.r, cell.c);
+        const currentScore = this.scores[this.currentPlayer];
+        if (currentScore === 1) {
+            this.nukes[this.currentPlayer]++; 
+            this.showToast("TARGET NEUTRALIZED. NUKE ARMED.");
+        } else if (currentScore === 2) {
+            const opponent = this.currentPlayer === 1 ? 2 : 1;
+            this.nukes[opponent]++;
+            this.showToast("WARNING: OPPONENT INTERCEPTED CODES. ENEMY GAINS NUKE.");
+        }
+        segment.forEach(p => {
+            const s = this.grid[p.r][p.c];
+            let nextState = s;
+            if (this.currentPlayer === 1) {
+                if (s === STATE.P1) nextState = STATE.P1_SCORED;
+                if (s === STATE.P1_BUNKER) nextState = STATE.P1_BUNKER_SCORED;
+            } else {
+                if (s === STATE.P2) nextState = STATE.P2_SCORED;
+                if (s === STATE.P2_BUNKER) nextState = STATE.P2_BUNKER_SCORED;
+            }
+            this.grid[p.r][p.c] = nextState;
+            this.updateCellVisual(p.r, p.c);
         });
     }
 
-    checkBoardFull() { return this.grid.every(row => row.every(c => c !== STATE.EMPTY)); }
-
-    // --- UI RENDERERS ---
-
-    createBoard(size) {
-        this.mapSize = size;
-        this.grid = Array(size).fill().map(() => Array(size).fill(0));
-        this.renderBoard();
-    }
-
-    renderBoard() {
-        if (!this.boardElement) return;
-        this.boardElement.innerHTML = '';
-        this.boardElement.style.gridTemplateColumns = `repeat(${this.mapSize}, 1fr)`;
-        for (let r=0; r<this.mapSize; r++) {
-            for (let c=0; c<this.mapSize; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.onclick = () => this.handleCellClick(r, c);
-                this.boardElement.appendChild(cell);
-                this.updateCellVisual(r, c);
-            }
-        }
-    }
-
-    updateCellVisual(r, c, animateBunker = false) {
-        const cell = this.getCell(r, c);
-        if (!cell) return;
-        const s = this.grid[r][c];
-        cell.className = 'cell';
-        cell.innerHTML = '';
-        if (s === STATE.CRATER) { cell.classList.add('crater'); return; }
-        if (s === STATE.EMPTY) {
-            if (this.uiTargetingMode && !this.uiBoostActive) cell.classList.add('invalid-target');
+    toggleTargeting() {
+        if (!this.gameActive) return;
+        if (this.nukes[this.currentPlayer] <= 0) {
+            this.showToast("SILOS EMPTY.");
+            this.sound.playError();
             return;
         }
-
-        const p = document.createElement('div');
-        p.className = 'piece';
-        const owner = this.getPlayerId(s);
-        p.classList.add(owner === 1 ? 'p1' : 'p2');
-        if (s === 1 || s === 2) p.classList.add('placed');
-        if (s === 3 || s === 4 || s === 7 || s === 8) p.classList.add('scored');
-        if (s >= 5 && s <= 8) { p.classList.add('bunker'); if (animateBunker) p.classList.add('forming'); }
-        if (this.lastMove?.r === r && this.lastMove?.c === c) p.classList.add('last-move');
-        
-        cell.appendChild(p);
-
-        if (this.uiTargetingMode && !this.uiBoostActive && owner !== this.currentPlayer) {
-            cell.classList.add('invalid-target');
+        this.targetingMode = !this.targetingMode;
+        this.updateUI(); 
+        if (this.targetingMode) {
+            this.sound.playPlace(); 
+            if (this.boostActive) this.showToast("BOOSTED LAUNCH PRIMED.");
+            else this.showToast("STANDARD LAUNCH PRIMED.");
         }
     }
 
-    getCell(r, c) { 
-        if (!this.boardElement) return null;
-        return this.boardElement.children[r * this.mapSize + c]; 
+    toggleBoost() {
+        if (!this.gameActive) return;
+        if (this.boosters[this.currentPlayer] <= 0) {
+            this.showToast("NO BOOSTERS AVAILABLE.");
+            this.sound.playError();
+            return;
+        }
+        this.boostActive = !this.boostActive;
+        this.sound.playPlace();
+        this.updateUI();
+    }
+
+    executeNuke(r, c) {
+        if (this.nukes[this.currentPlayer] < 1) return;
+        if (!this.boostActive) {
+            const s = this.grid[r][c];
+            const p = this.currentPlayer;
+            const owner = this.getPlayerId(s);
+            if (owner !== p) {
+                this.showToast("INVALID TARGET: ALLIED UNIT REQUIRED.");
+                this.sound.playError();
+                return;
+            }
+        }
+        const affectedCells = [];
+        const maxDist = this.boostActive ? 2 : 1;
+        for(let dr = -maxDist; dr <= maxDist; dr++) {
+            for(let dc = -maxDist; dc <= maxDist; dc++) {
+                const dist = Math.abs(dr) + Math.abs(dc);
+                if (dist <= maxDist) {
+                    const nr = r + dr;
+                    const nc = c + dc;
+                    if (this.isValid(nr, nc)) {
+                        const cell = this.getCell(nr, nc);
+                        cell.classList.add('exploding');
+                        affectedCells.push({r: nr, c: nc, cell});
+                    }
+                }
+            }
+        }
+        this.sound.playNuke();
+        document.querySelector('.board-container').classList.add('impact');
+        setTimeout(() => {
+            affectedCells.forEach(({r, c, cell}) => {
+                const s = this.grid[r][c];
+                const isBunker = (s === STATE.P1_BUNKER || s === STATE.P2_BUNKER || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
+                if (isBunker && !this.boostActive) {
+                    cell.classList.remove('exploding');
+                } else {
+                    if (isBunker) {
+                        const owner = this.getPlayerId(s);
+                        if (owner > 0) this.bunkers[owner]--;
+                    }
+                    this.grid[r][c] = STATE.CRATER;
+                    cell.classList.remove('exploding');
+                    cell.innerHTML = ''; 
+                    cell.className = 'cell crater';
+                }
+            });
+            document.querySelector('.board-container').classList.remove('impact');
+            this.nukes[this.currentPlayer]--;
+            if (this.boostActive) this.boosters[this.currentPlayer]--;
+            this.targetingMode = false;
+            this.boostActive = false;
+            this.bonusTurn = false;
+            this.switchTurn();
+        }, 350);
+    }
+
+    isValid(r, c) { return r >= 0 && r < this.rows && c >= 0 && c < this.cols; }
+    getCell(r, c) { return this.boardElement.children[r * this.cols + c]; }
+
+    updateCellVisual(r, c) {
+        const cell = this.getCell(r, c);
+        cell.className = 'cell';
+        cell.innerHTML = '';
+        const s = this.grid[r][c];
+        if (s === STATE.CRATER) {
+            cell.classList.add('crater');
+        } else if (s !== STATE.EMPTY) {
+            const p = document.createElement('div');
+            p.className = 'piece';
+            if (s === STATE.P1) p.classList.add('p1', 'placed');
+            else if (s === STATE.P2) p.classList.add('p2', 'placed');
+            else if (s === STATE.P1_SCORED) p.classList.add('p1', 'scored');
+            else if (s === STATE.P2_SCORED) p.classList.add('p2', 'scored');
+            else if (s === STATE.P1_BUNKER) p.classList.add('p1', 'bunker');
+            else if (s === STATE.P2_BUNKER) p.classList.add('p2', 'bunker');
+            else if (s === STATE.P1_BUNKER_SCORED) p.classList.add('p1', 'bunker', 'scored');
+            else if (s === STATE.P2_BUNKER_SCORED) p.classList.add('p2', 'bunker', 'scored');
+            if (this.lastMove && this.lastMove.r === r && this.lastMove.c === c) p.classList.add('last-move');
+            cell.appendChild(p);
+        }
+        if (this.targetingMode && !this.boostActive) {
+            const owner = this.getPlayerId(s);
+            if (owner !== this.currentPlayer) cell.classList.add('invalid-target');
+        }
     }
 
     updateUI() {
@@ -959,76 +1109,126 @@ class Connect5 {
         document.getElementById('boost2').textContent = this.boosters[2];
         document.getElementById('bunker1').textContent = this.bunkers[1];
         document.getElementById('bunker2').textContent = this.bunkers[2];
-
-        let status = p1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
+        let txt = p1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
         let statusClass = "status-text";
-        if (this.bonusTurn) { status = "BONUS TURN ACTIVE"; statusClass = "status-bonus"; }
-        else if (this.uiTargetingMode) { status = this.uiBoostActive ? "TARGETING BOOSTED ICBM..." : "TARGETING ICBM..."; statusClass = "status-bonus"; }
-        
-        const st = document.getElementById('status-text');
-        st.textContent = status;
-        st.className = statusClass;
-
-        const iso = document.getElementById('iso-indicator');
         if (this.bonusTurn) {
-            iso.textContent = this.ignoreIsolation ? "ISOLATION: IMPOSSIBLE" : "ISOLATION: POSSIBLE";
-            iso.classList.toggle('available', !this.ignoreIsolation);
-        } else {
-            iso.textContent = "";
+            txt = "BONUS TURN ACTIVE";
+            statusClass = "status-bonus";
+        } else if (this.targetingMode) {
+            txt = this.boostActive ? "TARGETING BOOSTED ICBM..." : "TARGETING STANDARD ICBM...";
+            statusClass = "status-bonus"; 
         }
-
-        const bn = document.getElementById('btn-nuke');
-        bn.disabled = this.nukes[this.currentPlayer] <= 0;
-        bn.innerText = this.uiTargetingMode ? "CANCEL" : "LAUNCH ICBM";
-        bn.classList.toggle('active', this.uiTargetingMode);
-
-        const bb = document.getElementById('btn-boost');
-        bb.disabled = this.boosters[this.currentPlayer] <= 0 || !this.uiTargetingMode;
-        bb.classList.toggle('active', this.uiBoostActive);
-
-        if (this.boardElement) {
-            this.boardElement.className = 'board';
-            if (this.uiTargetingMode) this.boardElement.classList.add(this.uiBoostActive ? 'targeting-boosted' : 'targeting');
+        this.statusText.textContent = txt;
+        this.statusText.className = statusClass;
+        const btnNuke = document.getElementById('btn-nuke');
+        const btnBoost = document.getElementById('btn-boost');
+        btnNuke.disabled = this.nukes[this.currentPlayer] <= 0;
+        btnNuke.innerText = this.targetingMode ? "CANCEL" : "LAUNCH ICBM";
+        btnNuke.classList.toggle('active', this.targetingMode);
+        btnBoost.disabled = this.boosters[this.currentPlayer] <= 0 || this.nukes[this.currentPlayer] <= 0;
+        btnBoost.classList.toggle('active', this.boostActive);
+        this.boardElement.className = 'board';
+        if (this.targetingMode) {
+            this.boardElement.classList.add(this.boostActive ? 'targeting-boosted' : 'targeting');
+            for(let r=0; r<this.rows; r++) for(let c=0; c<this.cols; c++) this.updateCellVisual(r,c);
         }
     }
 
-    showToast(m) {
-        const t = document.getElementById('toast');
-        t.textContent = m; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
+    showToast(msg) {
+        this.toast.textContent = msg;
+        this.toast.classList.add('show');
+        setTimeout(() => this.toast.classList.remove('show'), 2500);
     }
 
-    // --- SYSTEM ---
-
-    endRound(reason) {
-        this.gameActive = false;
-        this.showEndScreen(reason);
+    saveGame() {
+        localStorage.setItem('con5_v5_save', JSON.stringify({
+            grid: this.grid, scores: this.scores, nukes: this.nukes, boosters: this.boosters, bunkers: this.bunkers,
+            currentPlayer: this.currentPlayer, bonusTurn: this.bonusTurn, lastMove: this.lastMove, mapSize: this.mapSize
+        }));
+        this.showToast("SIMULATION SAVED");
+        this.sound.playPlace();
     }
 
-    showEndScreen(reason) {
-        const h2 = document.getElementById('winner-title');
-        let win = "DRAW";
-        if (this.scores[1] > this.scores[2]) win = "COMMANDER A";
-        else if (this.scores[2] > this.scores[1]) win = "COMMANDER B";
-        h2.textContent = win === "DRAW" ? "STALEMATE" : `${win} VICTORIOUS`;
-        document.getElementById('overlay').classList.add('visible');
+    loadGame() {
+        const data = localStorage.getItem('con5_v5_save');
+        if (!data) return false;
+        try {
+            const s = JSON.parse(data);
+            this.mapSize = s.mapSize || 15;
+            this.rows = this.mapSize;
+            this.cols = this.mapSize;
+            this.createBoard(); 
+            this.grid = s.grid;
+            this.scores = s.scores;
+            this.nukes = s.nukes;
+            this.boosters = s.boosters || {1:0, 2:0};
+            this.bunkers = s.bunkers || {1:0, 2:0};
+            this.currentPlayer = s.currentPlayer;
+            this.bonusTurn = s.bonusTurn;
+            this.lastMove = s.lastMove || null;
+            this.renderBoard();
+            this.updateUI();
+            this.showToast("SIMULATION RESTORED");
+            this.sound.playPlace();
+            return true;
+        } catch(e) { return false; }
     }
 
     resetRound() {
-        this.scores = {1:0, 2:0}; this.nukes = {1:0, 2:0}; this.boosters = {1:0, 2:0}; this.bunkers = {1:0, 2:0};
-        this.currentPlayer = 1; this.bonusTurn = false; this.lastMove = null; this.gameActive = true;
-        this.uiTargetingMode = false; this.uiBoostActive = false;
-        this.createBoard(this.mapSize);
+        this.gameActive = true;
+        this.scores = {1:0, 2:0};
+        this.nukes = {1:0, 2:0};
+        this.boosters = {1:0, 2:0};
+        this.bunkers = {1:0, 2:0};
+        this.currentPlayer = 1;
+        this.lastMove = null;
+        this.bonusTurn = false;
+        this.createBoard();
         this.updateUI();
         document.getElementById('overlay').classList.remove('visible');
+        this.showToast("WAR GAMES INITIALIZED");
+        this.sound.playPlace();
     }
 
-    setMapSize(s) { this.mapSize = s; this.resetRound(); document.getElementById('settings-overlay').classList.remove('visible'); }
-    setScale(v) { document.getElementById('app-root').style.transform = `scale(${v})`; }
-    openSettings() { document.getElementById('settings-overlay').classList.add('visible'); }
+    hideOverlay() { document.getElementById('overlay').classList.remove('visible'); }
 
-    saveToLocal() { localStorage.setItem('con5_mp_prep', JSON.stringify(this.getState())); this.showToast("LOCAL STATE SAVED"); }
-    loadFromLocal() { const s = localStorage.getItem('con5_mp_prep'); if (s) { this.setState(JSON.parse(s)); this.showToast("LOCAL STATE LOADED"); } }
+    endRound(reason = "SCORE") {
+        this.gameActive = false;
+        let winner;
+        let subtitle = "";
+        if (reason === "SCORE") {
+            winner = this.scores[1] >= 3 ? "COMMANDER A" : "COMMANDER B";
+            subtitle = "VICTORY BY DOMINANCE (3 POINTS)";
+        } else if (reason === "FULL") {
+            if (this.scores[1] > this.scores[2]) winner = "COMMANDER A";
+            else if (this.scores[2] > this.scores[1]) winner = "COMMANDER B";
+            else {
+                if (this.bunkers[1] > this.bunkers[2]) {
+                    winner = "COMMANDER A";
+                    subtitle = `TIE-BREAKER: BUNKERS (${this.bunkers[1]} vs ${this.bunkers[2]})`;
+                } else if (this.bunkers[2] > this.bunkers[1]) {
+                    winner = "COMMANDER B";
+                    subtitle = `TIE-BREAKER: BUNKERS (${this.bunkers[2]} vs ${this.bunkers[1]})`;
+                } else {
+                    winner = "DRAW";
+                    subtitle = "STALEMATE: SCORES AND BUNKERS TIED";
+                }
+            }
+        }
+        const title = winner === "DRAW" ? "SIMULATION HALTED" : `${winner} VICTORIOUS`;
+        const h2 = document.getElementById('winner-title');
+        h2.textContent = title;
+        if(!h2.querySelector('.sub')) {
+            const sub = document.createElement('div');
+            sub.className = 'sub';
+            sub.style.fontSize = "1rem";
+            sub.style.marginTop = "10px";
+            sub.style.opacity = "0.7";
+            h2.appendChild(sub);
+        }
+        h2.querySelector('.sub').textContent = subtitle;
+        document.getElementById('overlay').classList.add('visible');
+    }
 }
 
 const game = new Connect5();
