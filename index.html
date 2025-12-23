@@ -251,29 +251,24 @@
             display: grid;
             width: min(90vw, 550px);
             height: min(90vw, 550px);
-            /* Remove background gradient to fix alignment */
             background: transparent;
-            /* Outer borders */
             border-top: 1px solid var(--grid-color);
             border-left: 1px solid var(--grid-color);
             cursor: crosshair;
             transition: opacity 0.5s;
         }
         
-        /* --- Cell States --- */
         .cell {
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            /* Inner borders */
             border-right: 1px solid var(--grid-color);
             border-bottom: 1px solid var(--grid-color);
             box-sizing: border-box; 
-            overflow: hidden; /* Prevent visual spill */
+            overflow: hidden; 
         }
         
-        /* Crater - High Contrast Hazard Stripes */
         .cell.crater {
             background: repeating-linear-gradient(
                 45deg,
@@ -286,7 +281,6 @@
             box-shadow: inset 0 0 10px #ff0000;
         }
 
-        /* Targeting Overlay */
         .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
         .board.targeting .cell.invalid-target:hover { background: rgba(255, 0, 0, 0.2); box-shadow: inset 0 0 10px red; cursor: not-allowed; }
         
@@ -295,12 +289,10 @@
             box-shadow: inset 0 0 15px var(--text-boost); 
         }
 
-        /* Pieces */
         .piece {
             width: 60%; height: 60%; border-radius: 50%;
             transition: all 0.2s; 
             box-sizing: border-box;
-            /* Base visual is solid color + glow */
             box-shadow: 0 0 8px currentColor;
         }
         .piece.p1 { background-color: var(--p1-color); color: var(--p1-color); }
@@ -309,23 +301,19 @@
         .piece.placed { animation: ping 0.4s ease-out; }
         @keyframes ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 15px transparent; } }
 
-        /* Last Move Highlight: Box shadow only to prevent grid distortion */
         .piece.last-move {
             box-shadow: 0 0 0 2px #fff, 0 0 15px #fff !important;
             z-index: 10;
         }
 
-        /* Scored Pieces: Hollow ring styling using box-shadow to prevent expansion */
         .piece.scored { 
             background-color: transparent !important;
-            /* Inset shadow creates the "hollow" look without borders */
             box-shadow: 0 0 0 3px currentColor, 0 0 15px currentColor;
             width: 65%; height: 65%; 
         }
         .piece.p1.scored { color: var(--scored-p1); }
         .piece.p2.scored { color: var(--scored-p2); }
 
-        /* Square Completion Animation */
         .piece.square-flash {
             animation: flash-square 0.5s ease-out;
         }
@@ -335,20 +323,16 @@
             100% { transform: scale(1); filter: brightness(1); }
         }
 
-        /* Bunker Styles */
         .piece.bunker {
             border-radius: 10%; 
             width: 75%; height: 75%;
-            /* Simulate border with box-shadow inset */
             background: repeating-linear-gradient(45deg, currentColor, currentColor 2px, transparent 2px, transparent 4px);
             box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor;
             z-index: 5;
         }
         
-        /* Scored Bunker (Hollow Square) */
         .piece.bunker.scored {
             background: transparent !important;
-            /* Hollow square look using box-shadow */
             box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor;
         }
         
@@ -361,7 +345,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* --- Controls --- */
         .controls-area {
             width: 100%; margin-top: 15px;
             display: grid; grid-template-columns: 2fr 1fr; gap: 15px;
@@ -380,7 +363,6 @@
         button:hover:not(:disabled) { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
 
-        /* Action Buttons */
         .btn-nuke { color: var(--text-alert); border-color: var(--text-alert); }
         .btn-nuke:hover:not(:disabled) { background: rgba(255, 0, 0, 0.1); box-shadow: 0 0 10px rgba(255,0,0,0.4); }
         .btn-nuke.active { background: var(--text-alert); color: #000; }
@@ -393,7 +375,6 @@
 
         .btn-system { border-color: #1a3c5a; }
 
-        /* --- Overlay --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 100;
@@ -406,7 +387,6 @@
         .modal-btn-group { display: flex; flex-direction: column; gap: 15px; }
         .btn-view-board { border-color: #666; color: #aaa; }
         
-        /* Settings in Modal */
         .setting-row { margin-bottom: 20px; text-align: left; }
         .setting-label { display: block; margin-bottom: 10px; font-size: 0.8rem; color: #aaa; }
         .range-wrap { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 0.8rem; }
@@ -427,12 +407,11 @@
 
     <h1>
         <span>WAR ROOM // SYMMETRIC</span>
-        <span class="sim-header-right">V.5.1 [SIMULTANEOUS_TRIGGER_FIX]</span>
+        <span class="sim-header-right">V.5.2 [INFINITE_BONUS_FIX]</span>
     </h1>
 
     <div class="game-wrapper">
         
-        <!-- Left Tutorial: Patterns -->
         <div class="side-panel tutorial-panel">
             <h3>PATTERNS</h3>
             <div class="tut-item">
@@ -463,7 +442,6 @@
 
         <div class="game-center">
             <div class="scoreboard">
-                <!-- Player 1 Panel -->
                 <div class="player-score p1-panel" id="p1-panel">
                     <div class="player-label">COM-A (CYAN)</div>
                     <div class="score-val" id="score1">0</div>
@@ -474,7 +452,6 @@
                     </div>
                 </div>
                 
-                <!-- Player 2 Panel -->
                 <div class="player-score p2-panel" id="p2-panel">
                     <div class="player-label">COM-B (AMBER)</div>
                     <div class="score-val" id="score2">0</div>
@@ -515,7 +492,6 @@
             </div>
         </div>
 
-        <!-- Right Tutorial: Ordnance -->
         <div class="side-panel tutorial-panel">
             <h3>ORDNANCE</h3>
             <div class="tut-item">
@@ -537,7 +513,6 @@
 
 </div>
 
-    <!-- Victory Modal -->
     <div class="overlay" id="overlay">
         <div class="modal">
             <h2 id="winner-title">VICTORY</h2>
@@ -548,7 +523,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div class="overlay" id="settings-overlay">
         <div class="modal">
             <h2>SYSTEM SETTINGS</h2>
@@ -579,12 +553,11 @@
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v5.1
- * * Fixes:
- * - Simultaneous Pattern Trigger (Plus + Square) now works correctly.
+ * CONNECT 5: WAR ROOM v5.2
+ * Fix: Infinite Bonus Turn bug.
+ * Patterns trigger simultaneously, and bonus turns are properly consumed.
  */
 
-// Simple Synth Sound System
 class SoundSystem {
     constructor() { this.ctx = null; }
     init() {
@@ -689,7 +662,6 @@ class Connect5 {
         document.body.addEventListener('click', () => this.sound.init(), {once:true});
     }
 
-    // --- Settings ---
     openSettings() { document.getElementById('settings-overlay').classList.add('visible'); }
     setScale(val) { this.appRoot.style.transform = `scale(${val})`; }
     setMapSize(size) {
@@ -722,8 +694,6 @@ class Connect5 {
             }
         }
     }
-
-    // --- Core Loop ---
 
     handleInteraction(r, c) {
         if (!this.gameActive) return;
@@ -760,7 +730,6 @@ class Connect5 {
     resolveTurn(r, c) {
         const player = this.currentPlayer;
         
-        // 1. Scoring Check (Priority)
         const scored = this.checkScoring(r, c);
         
         if (this.checkBoardFull()) {
@@ -780,11 +749,9 @@ class Connect5 {
             return;
         } 
         
-        // 2. Pattern Checks (Accumulate Messages)
         let patternMessages = [];
-        let triggerUpdate = false;
+        let triggeredBonusThisAction = false;
 
-        // A. Plus Pattern
         const plusCoords = this.checkForPlusPattern(r, c);
         if (plusCoords) {
             this.boosters[player]++;
@@ -797,54 +764,53 @@ class Connect5 {
                 const s = this.grid[r][c];
                 const isScored = (s === STATE.P1_SCORED || s === STATE.P2_SCORED || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
                 const newState = isScored ? bunkerScored : bunkerState;
-                
                 const wasBunker = (s === STATE.P1_BUNKER || s === STATE.P2_BUNKER || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
                 if (!wasBunker) this.bunkers[player]++;
-
                 this.grid[r][c] = newState;
                 this.updateCellVisual(r, c);
-                
                 const cell = this.getCell(r, c);
                 const piece = cell.querySelector('.piece');
                 if(piece) piece.classList.add('forming'); 
             });
-
             patternMessages.push("BUNKERS ESTABLISHED");
-            triggerUpdate = true;
         }
 
-        // B. Bonus Turn Check (2x2 Square)
+        // Only allow a bonus turn if one isn't ALREADY active (prevents stacking/infinite loops)
         if (!this.bonusTurn) {
             const squareCoords = this.checkForSquarePattern(r, c);
             if (squareCoords) {
-                this.bonusTurn = true;
-                this.checkIsolationAvailability(); 
+                triggeredBonusThisAction = true;
                 this.sound.playBonus();
-                
                 squareCoords.forEach(({r, c}) => {
-                    const cell = this.getCell(r, c); // Re-fetch as DOM might have updated
+                    const cell = this.getCell(r, c);
                     const piece = cell.querySelector('.piece');
                     if (piece) piece.classList.add('square-flash');
                 });
-                
-                let isoMsg = this.ignoreIsolation ? " (FREE)" : "";
-                patternMessages.push(`BONUS TURN ${isoMsg}`);
-                triggerUpdate = true;
+                patternMessages.push(`BONUS TURN`);
             }
         }
         
-        if (triggerUpdate) {
-            this.updateUI();
+        if (patternMessages.length > 0) {
             this.showToast(patternMessages.join(" + "));
+            this.updateUI();
         }
 
-        if (this.bonusTurn) {
-            return; // Turn continues
+        if (triggeredBonusThisAction) {
+            this.bonusTurn = true;
+            this.checkIsolationAvailability();
+            this.updateUI();
+            return; 
         }
-        
-        this.bonusTurn = false;
-        this.ignoreIsolation = false;
-        this.switchTurn();
+
+        // If we were already in a bonus turn, it is now consumed
+        if (this.bonusTurn) {
+            this.bonusTurn = false;
+            this.ignoreIsolation = false;
+            this.switchTurn();
+        } else {
+            // Normal turn end
+            this.switchTurn();
+        }
     }
 
     switchTurn() {
@@ -855,8 +821,6 @@ class Connect5 {
         this.updateUI();
         this.checkIsolationAvailability();
     }
-
-    // --- Logic ---
 
     checkBoardFull() {
         return this.grid.every(row => row.every(cell => cell !== STATE.EMPTY));
@@ -886,7 +850,6 @@ class Connect5 {
             this.isoIndicator.style.color = "var(--text-boost)";
             this.isoIndicator.classList.remove('available'); 
         } else {
-            if (!this.bonusTurn) this.ignoreIsolation = false; 
             this.isoIndicator.textContent = "ISOLATION: POSSIBLE";
             this.isoIndicator.classList.add('available');
             this.isoIndicator.style.color = "";
@@ -908,12 +871,9 @@ class Connect5 {
         return true;
     }
 
-    // --- Pattern Logic ---
-
     checkForSquarePattern(r, c) {
         const player = this.currentPlayer;
         const corners = [[-1, -1], [-1, 0], [0, -1], [0, 0]]; 
-        
         for (let [dr, dc] of corners) {
             const tr = r + dr, tc = c + dc;
             let isSquare = true;
@@ -941,21 +901,17 @@ class Connect5 {
             const centerR = r + dr;
             const centerC = c + dc;
             if (this.isValid(centerR, centerC)) {
-                // Farming Check
                 const centerS = this.grid[centerR][centerC];
                 if (centerS === bunkerState || centerS === bunkerScored) continue;
                 if (this.getPlayerId(centerS) !== player) continue;
-
                 const offsets = [[0,0], [0,1], [0,-1], [1,0], [-1,0]]; 
                 const arms = [[0,1], [0,-1], [1,0], [-1,0]];
-                
                 const isPlus = arms.every(([ar, ac]) => {
                     const armR = centerR + ar;
                     const armC = centerC + ac;
                     if (!this.isValid(armR, armC)) return false;
                     return this.getPlayerId(this.grid[armR][armC]) === player;
                 });
-                
                 if (isPlus) return offsets.map(([or, oc]) => ({r: centerR+or, c: centerC+oc}));
             }
         }
@@ -966,7 +922,6 @@ class Connect5 {
         const player = this.currentPlayer;
         const directions = [[0,1], [1,0], [1,1], [1,-1]];
         let scored = false;
-        
         const unscoredNormal = player === 1 ? STATE.P1 : STATE.P2;
         const unscoredBunker = player === 1 ? STATE.P1_BUNKER : STATE.P2_BUNKER;
         const isCountable = (s) => (s === unscoredNormal || s === unscoredBunker);
@@ -1004,7 +959,6 @@ class Connect5 {
     applyScore(segment) {
         this.scores[this.currentPlayer]++;
         const currentScore = this.scores[this.currentPlayer];
-
         if (currentScore === 1) {
             this.nukes[this.currentPlayer]++; 
             this.showToast("TARGET NEUTRALIZED. NUKE ARMED.");
@@ -1013,7 +967,6 @@ class Connect5 {
             this.nukes[opponent]++;
             this.showToast("WARNING: OPPONENT INTERCEPTED CODES. ENEMY GAINS NUKE.");
         }
-
         segment.forEach(p => {
             const s = this.grid[p.r][p.c];
             let nextState = s;
@@ -1029,8 +982,6 @@ class Connect5 {
         });
     }
 
-    // --- Nuke Logic ---
-
     toggleTargeting() {
         if (!this.gameActive) return;
         if (this.nukes[this.currentPlayer] <= 0) {
@@ -1042,11 +993,8 @@ class Connect5 {
         this.updateUI(); 
         if (this.targetingMode) {
             this.sound.playPlace(); 
-            if (this.boostActive) {
-                this.showToast("BOOSTED LAUNCH PRIMED (UNRESTRICTED).");
-            } else {
-                this.showToast("STANDARD LAUNCH PRIMED (TARGET ALLIED BEACON).");
-            }
+            if (this.boostActive) this.showToast("BOOSTED LAUNCH PRIMED.");
+            else this.showToast("STANDARD LAUNCH PRIMED.");
         }
     }
 
@@ -1064,21 +1012,18 @@ class Connect5 {
 
     executeNuke(r, c) {
         if (this.nukes[this.currentPlayer] < 1) return;
-
         if (!this.boostActive) {
             const s = this.grid[r][c];
             const p = this.currentPlayer;
             const owner = this.getPlayerId(s);
             if (owner !== p) {
-                this.showToast("INVALID TARGET: STANDARD NUKE MUST TARGET ALLIED UNIT.");
+                this.showToast("INVALID TARGET: ALLIED UNIT REQUIRED.");
                 this.sound.playError();
                 return;
             }
         }
-
         const affectedCells = [];
         const maxDist = this.boostActive ? 2 : 1;
-        
         for(let dr = -maxDist; dr <= maxDist; dr++) {
             for(let dc = -maxDist; dc <= maxDist; dc++) {
                 const dist = Math.abs(dr) + Math.abs(dc);
@@ -1093,15 +1038,12 @@ class Connect5 {
                 }
             }
         }
-
         this.sound.playNuke();
         document.querySelector('.board-container').classList.add('impact');
-
         setTimeout(() => {
             affectedCells.forEach(({r, c, cell}) => {
                 const s = this.grid[r][c];
                 const isBunker = (s === STATE.P1_BUNKER || s === STATE.P2_BUNKER || s === STATE.P1_BUNKER_SCORED || s === STATE.P2_BUNKER_SCORED);
-                
                 if (isBunker && !this.boostActive) {
                     cell.classList.remove('exploding');
                 } else {
@@ -1116,15 +1058,8 @@ class Connect5 {
                 }
             });
             document.querySelector('.board-container').classList.remove('impact');
-            
             this.nukes[this.currentPlayer]--;
-            if (this.boostActive) {
-                this.boosters[this.currentPlayer]--;
-                this.showToast("STRATEGIC ASSET DEPLOYED (BOOSTED).");
-            } else {
-                this.showToast("IMPACT CONFIRMED.");
-            }
-            
+            if (this.boostActive) this.boosters[this.currentPlayer]--;
             this.targetingMode = false;
             this.boostActive = false;
             this.bonusTurn = false;
@@ -1140,33 +1075,25 @@ class Connect5 {
         cell.className = 'cell';
         cell.innerHTML = '';
         const s = this.grid[r][c];
-
         if (s === STATE.CRATER) {
             cell.classList.add('crater');
         } else if (s !== STATE.EMPTY) {
             const p = document.createElement('div');
             p.className = 'piece';
-            
-            if (s === STATE.P1) { p.classList.add('p1', 'placed'); }
-            else if (s === STATE.P2) { p.classList.add('p2', 'placed'); }
-            else if (s === STATE.P1_SCORED) { p.classList.add('p1', 'scored'); }
-            else if (s === STATE.P2_SCORED) { p.classList.add('p2', 'scored'); }
-            else if (s === STATE.P1_BUNKER) { p.classList.add('p1', 'bunker'); }
-            else if (s === STATE.P2_BUNKER) { p.classList.add('p2', 'bunker'); }
-            else if (s === STATE.P1_BUNKER_SCORED) { p.classList.add('p1', 'bunker', 'scored'); }
-            else if (s === STATE.P2_BUNKER_SCORED) { p.classList.add('p2', 'bunker', 'scored'); }
-            
-            if (this.lastMove && this.lastMove.r === r && this.lastMove.c === c) {
-                p.classList.add('last-move');
-            }
-
+            if (s === STATE.P1) p.classList.add('p1', 'placed');
+            else if (s === STATE.P2) p.classList.add('p2', 'placed');
+            else if (s === STATE.P1_SCORED) p.classList.add('p1', 'scored');
+            else if (s === STATE.P2_SCORED) p.classList.add('p2', 'scored');
+            else if (s === STATE.P1_BUNKER) p.classList.add('p1', 'bunker');
+            else if (s === STATE.P2_BUNKER) p.classList.add('p2', 'bunker');
+            else if (s === STATE.P1_BUNKER_SCORED) p.classList.add('p1', 'bunker', 'scored');
+            else if (s === STATE.P2_BUNKER_SCORED) p.classList.add('p2', 'bunker', 'scored');
+            if (this.lastMove && this.lastMove.r === r && this.lastMove.c === c) p.classList.add('last-move');
             cell.appendChild(p);
         }
-        
         if (this.targetingMode && !this.boostActive) {
-            const p = this.currentPlayer;
             const owner = this.getPlayerId(s);
-            if (owner !== p) cell.classList.add('invalid-target');
+            if (owner !== this.currentPlayer) cell.classList.add('invalid-target');
         }
     }
 
@@ -1174,20 +1101,16 @@ class Connect5 {
         const p1 = this.currentPlayer === 1;
         document.getElementById('p1-panel').classList.toggle('active-turn', p1);
         document.getElementById('p2-panel').classList.toggle('active-turn', !p1);
-        
         document.getElementById('score1').textContent = this.scores[1];
         document.getElementById('score2').textContent = this.scores[2];
-        
         document.getElementById('nuke1').textContent = this.nukes[1];
         document.getElementById('nuke2').textContent = this.nukes[2];
         document.getElementById('boost1').textContent = this.boosters[1];
         document.getElementById('boost2').textContent = this.boosters[2];
         document.getElementById('bunker1').textContent = this.bunkers[1];
         document.getElementById('bunker2').textContent = this.bunkers[2];
-
         let txt = p1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
         let statusClass = "status-text";
-        
         if (this.bonusTurn) {
             txt = "BONUS TURN ACTIVE";
             statusClass = "status-bonus";
@@ -1195,28 +1118,19 @@ class Connect5 {
             txt = this.boostActive ? "TARGETING BOOSTED ICBM..." : "TARGETING STANDARD ICBM...";
             statusClass = "status-bonus"; 
         }
-        
         this.statusText.textContent = txt;
         this.statusText.className = statusClass;
-
         const btnNuke = document.getElementById('btn-nuke');
         const btnBoost = document.getElementById('btn-boost');
-        
         btnNuke.disabled = this.nukes[this.currentPlayer] <= 0;
         btnNuke.innerText = this.targetingMode ? "CANCEL" : "LAUNCH ICBM";
         btnNuke.classList.toggle('active', this.targetingMode);
-        
-        btnBoost.disabled = this.boosters[this.currentPlayer] <= 0;
-        if (this.nukes[this.currentPlayer] <= 0) btnBoost.disabled = true;
-        
+        btnBoost.disabled = this.boosters[this.currentPlayer] <= 0 || this.nukes[this.currentPlayer] <= 0;
         btnBoost.classList.toggle('active', this.boostActive);
-
         this.boardElement.className = 'board';
         if (this.targetingMode) {
             this.boardElement.classList.add(this.boostActive ? 'targeting-boosted' : 'targeting');
             for(let r=0; r<this.rows; r++) for(let c=0; c<this.cols; c++) this.updateCellVisual(r,c);
-        } else {
-            Array.from(this.boardElement.children).forEach(c => c.classList.remove('invalid-target'));
         }
     }
 
@@ -1228,15 +1142,8 @@ class Connect5 {
 
     saveGame() {
         localStorage.setItem('con5_v5_save', JSON.stringify({
-            grid: this.grid,
-            scores: this.scores,
-            nukes: this.nukes,
-            boosters: this.boosters,
-            bunkers: this.bunkers,
-            currentPlayer: this.currentPlayer,
-            bonusTurn: this.bonusTurn,
-            lastMove: this.lastMove,
-            mapSize: this.mapSize
+            grid: this.grid, scores: this.scores, nukes: this.nukes, boosters: this.boosters, bunkers: this.bunkers,
+            currentPlayer: this.currentPlayer, bonusTurn: this.bonusTurn, lastMove: this.lastMove, mapSize: this.mapSize
         }));
         this.showToast("SIMULATION SAVED");
         this.sound.playPlace();
@@ -1250,9 +1157,7 @@ class Connect5 {
             this.mapSize = s.mapSize || 15;
             this.rows = this.mapSize;
             this.cols = this.mapSize;
-            
             this.createBoard(); 
-            
             this.grid = s.grid;
             this.scores = s.scores;
             this.nukes = s.nukes;
@@ -1261,7 +1166,6 @@ class Connect5 {
             this.currentPlayer = s.currentPlayer;
             this.bonusTurn = s.bonusTurn;
             this.lastMove = s.lastMove || null;
-            
             this.renderBoard();
             this.updateUI();
             this.showToast("SIMULATION RESTORED");
@@ -1278,6 +1182,7 @@ class Connect5 {
         this.bunkers = {1:0, 2:0};
         this.currentPlayer = 1;
         this.lastMove = null;
+        this.bonusTurn = false;
         this.createBoard();
         this.updateUI();
         document.getElementById('overlay').classList.remove('visible');
@@ -1285,15 +1190,12 @@ class Connect5 {
         this.sound.playPlace();
     }
 
-    hideOverlay() {
-        document.getElementById('overlay').classList.remove('visible');
-    }
+    hideOverlay() { document.getElementById('overlay').classList.remove('visible'); }
 
     endRound(reason = "SCORE") {
         this.gameActive = false;
         let winner;
         let subtitle = "";
-
         if (reason === "SCORE") {
             winner = this.scores[1] >= 3 ? "COMMANDER A" : "COMMANDER B";
             subtitle = "VICTORY BY DOMINANCE (3 POINTS)";
@@ -1312,26 +1214,19 @@ class Connect5 {
                     subtitle = "STALEMATE: SCORES AND BUNKERS TIED";
                 }
             }
-            if (!subtitle && winner !== "DRAW") subtitle = `TIE-BREAKER: SCORE (${this.scores[1]} vs ${this.scores[2]})`;
         }
-
         const title = winner === "DRAW" ? "SIMULATION HALTED" : `${winner} VICTORIOUS`;
-        
         const h2 = document.getElementById('winner-title');
         h2.textContent = title;
-        
         if(!h2.querySelector('.sub')) {
             const sub = document.createElement('div');
             sub.className = 'sub';
             sub.style.fontSize = "1rem";
             sub.style.marginTop = "10px";
             sub.style.opacity = "0.7";
-            sub.textContent = subtitle;
             h2.appendChild(sub);
-        } else {
-            h2.querySelector('.sub').textContent = subtitle;
         }
-
+        h2.querySelector('.sub').textContent = subtitle;
         document.getElementById('overlay').classList.add('visible');
     }
 }
