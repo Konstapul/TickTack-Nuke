@@ -1,178 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Connect 5: War Room</title>
+<style>
+  body { font-family: sans-serif; }
+  #board { display: grid; gap: 2px; width: 600px; margin: 20px auto; }
+  .cell { width: 100%; aspect-ratio: 1 / 1; background: #eee; display: flex; align-items: center; justify-content: center; border: 1px solid #ccc; }
+  .piece.p1 { width: 80%; height: 80%; border-radius: 50%; background: red; }
+  .piece.p2 { width: 80%; height: 80%; border-radius: 50%; background: blue; }
+  .crater { background: black; }
+  #toast { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 5px 10px; border-radius: 4px; opacity: 0; transition: opacity 0.3s; }
+  #toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="status-text"></div>
+<div id="iso-indicator"></div>
+<div id="board"></div>
+<div id="toast"></div>
+
 <script>
-/**
- * CONNECT 5: WAR ROOM v6.4
- * FIXED INPUT HANDLING + MULTIPLAYER SAFE
- */
+document.addEventListener("DOMContentLoaded", () => {
+  // Your entire Connect5 code goes here
 
-const STATE = { EMPTY:0, P1:1, P2:2, P1_SCORED:3, P2_SCORED:4, P1_BUNKER:5, P2_BUNKER:6, P1_BUNKER_SCORED:7, P2_BUNKER_SCORED:8, CRATER:9 };
+  const STATE = { EMPTY:0, P1:1, P2:2, P1_SCORED:3, P2_SCORED:4, P1_BUNKER:5, P2_BUNKER:6, P1_BUNKER_SCORED:7, P2_BUNKER_SCORED:8, CRATER:9 };
 
-// --- MULTIPLAYER CLIENT ---
-let socket = null;
-let multiplayerEnabled = false;
+  let socket = null;
+  let multiplayerEnabled = false;
 
-function initMultiplayer(gameInstance) {
-    try {
-        socket = new WebSocket("ws://localhost:8080");
-        socket.onopen = () => {
-            multiplayerEnabled = true;
-            gameInstance.showToast("MULTIPLAYER CONNECTED");
-        };
-        socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            if (data.type === "state") gameInstance.setState(data.state);
-        };
-        socket.onclose = () => multiplayerEnabled = false;
-    } catch {}
-}
+  function initMultiplayer(gameInstance) {
+      try {
+          socket = new WebSocket("ws://localhost:8080");
+          socket.onopen = () => {
+              multiplayerEnabled = true;
+              gameInstance.showToast("MULTIPLAYER CONNECTED");
+          };
+          socket.onmessage = (event) => {
+              const data = JSON.parse(event.data);
+              if (data.type === "state") gameInstance.setState(data.state);
+          };
+          socket.onclose = () => multiplayerEnabled = false;
+      } catch {}
+  }
 
-class Connect5 {
-    constructor() {
-        this.mapSize = 15;
-        this.grid = Array(this.mapSize).fill().map(()=>Array(this.mapSize).fill(STATE.EMPTY));
-        this.currentPlayer = 1;
-        this.scores = {1:0,2:0};
-        this.nukes = {1:0,2:0};
-        this.boosters = {1:0,2:0};
-        this.bunkers = {1:0,2:0};
-        this.bonusTurn = false;
-        this.ignoreIsolation = false;
-        this.lastMove = null;
-        this.gameActive = true;
+  class Connect5 {
+      constructor() {
+          this.mapSize = 15;
+          this.grid = Array(this.mapSize).fill().map(()=>Array(this.mapSize).fill(STATE.EMPTY));
+          this.currentPlayer = 1;
+          this.scores = {1:0,2:0};
+          this.nukes = {1:0,2:0};
+          this.boosters = {1:0,2:0};
+          this.bunkers = {1:0,2:0};
+          this.bonusTurn = false;
+          this.ignoreIsolation = false;
+          this.lastMove = null;
+          this.gameActive = true;
 
-        this.uiTargetingMode = false;
-        this.uiBoostActive = false;
+          this.uiTargetingMode = false;
+          this.uiBoostActive = false;
 
-        this.boardElement = document.getElementById("board");
-        this.statusText = document.getElementById("status-text");
-        this.isoIndicator = document.getElementById("iso-indicator");
-        this.toast = document.getElementById("toast");
+          this.boardElement = document.getElementById("board");
+          this.statusText = document.getElementById("status-text");
+          this.isoIndicator = document.getElementById("iso-indicator");
+          this.toast = document.getElementById("toast");
 
-        this.renderBoard();
-        this.updateUI();
-    }
+          this.renderBoard();
+          this.updateUI();
+      }
 
-    // ---------- INPUT FIX ----------
-    handleCellClick(r, c) {
-        if (!this.gameActive) return;
+      handleCellClick(r, c) {
+          if (!this.gameActive) return;
 
-        if (this.uiTargetingMode) {
-            this.applyMove({
-                type: "nuke",
-                r, c,
-                boosted: this.uiBoostActive
-            });
-        } else {
-            this.applyMove({
-                type: "place",
-                r, c
-            });
-        }
-    }
+          if (this.uiTargetingMode) {
+              this.applyMove({
+                  type: "nuke",
+                  r, c,
+                  boosted: this.uiBoostActive
+              });
+          } else {
+              this.applyMove({
+                  type: "place",
+                  r, c
+              });
+          }
+      }
 
-    // ---------- MULTIPLAYER CORE ----------
-    getState() {
-        return JSON.parse(JSON.stringify({
-            grid:this.grid,
-            currentPlayer:this.currentPlayer,
-            scores:this.scores,
-            nukes:this.nukes,
-            boosters:this.boosters,
-            bunkers:this.bunkers,
-            bonusTurn:this.bonusTurn,
-            ignoreIsolation:this.ignoreIsolation,
-            lastMove:this.lastMove,
-            gameActive:this.gameActive,
-            mapSize:this.mapSize
-        }));
-    }
+      getState() {
+          return JSON.parse(JSON.stringify({
+              grid:this.grid,
+              currentPlayer:this.currentPlayer,
+              scores:this.scores,
+              nukes:this.nukes,
+              boosters:this.boosters,
+              bunkers:this.bunkers,
+              bonusTurn:this.bonusTurn,
+              ignoreIsolation:this.ignoreIsolation,
+              lastMove:this.lastMove,
+              gameActive:this.gameActive,
+              mapSize:this.mapSize
+          }));
+      }
 
-    setState(s) {
-        Object.assign(this, s);
-        this.renderBoard();
-        this.updateUI();
-    }
+      setState(s) {
+          Object.assign(this, s);
+          this.renderBoard();
+          this.updateUI();
+      }
 
-    applyMove(move) {
-        if (!this.gameActive) return;
+      applyMove(move) {
+          if (!this.gameActive) return;
 
-        if (move.type === "place") {
-            if (this.grid[move.r][move.c] !== STATE.EMPTY) return;
-            this.grid[move.r][move.c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
-            this.lastMove = {r:move.r,c:move.c};
-            this.switchTurn();
-        }
+          if (move.type === "place") {
+              if (this.grid[move.r][move.c] !== STATE.EMPTY) return;
+              this.grid[move.r][move.c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
+              this.lastMove = {r:move.r,c:move.c};
+              this.switchTurn();
+          }
 
-        if (move.type === "nuke") {
-            if (this.nukes[this.currentPlayer] <= 0) return;
-            this.grid[move.r][move.c] = STATE.CRATER;
-            this.nukes[this.currentPlayer]--;
-            this.uiTargetingMode = false;
-            this.uiBoostActive = false;
-            this.switchTurn();
-        }
+          if (move.type === "nuke") {
+              if (this.nukes[this.currentPlayer] <= 0) return;
+              this.grid[move.r][move.c] = STATE.CRATER;
+              this.nukes[this.currentPlayer]--;
+              this.uiTargetingMode = false;
+              this.uiBoostActive = false;
+              this.switchTurn();
+          }
 
-        this.renderBoard();
-        this.updateUI();
+          this.renderBoard();
+          this.updateUI();
 
-        if (multiplayerEnabled && socket?.readyState === 1) {
-            socket.send(JSON.stringify({type:"state",state:this.getState()}));
-        }
-    }
+          if (multiplayerEnabled && socket?.readyState === 1) {
+              socket.send(JSON.stringify({type:"state",state:this.getState()}));
+          }
+      }
 
-    switchTurn() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-    }
+      switchTurn() {
+          this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+      }
 
-    // ---------- UI ----------
-    renderBoard() {
-        this.boardElement.innerHTML = "";
-        this.boardElement.style.gridTemplateColumns = `repeat(${this.mapSize},1fr)`;
+      renderBoard() {
+          this.boardElement.innerHTML = "";
+          this.boardElement.style.gridTemplateColumns = `repeat(${this.mapSize},1fr)`;
 
-        for (let r=0;r<this.mapSize;r++) {
-            for (let c=0;c<this.mapSize;c++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.onclick = () => this.handleCellClick(r,c);
+          for (let r=0;r<this.mapSize;r++) {
+              for (let c=0;c<this.mapSize;c++) {
+                  const cell = document.createElement("div");
+                  cell.className = "cell";
+                  cell.onclick = () => this.handleCellClick(r,c);
 
-                const s = this.grid[r][c];
-                if (s !== STATE.EMPTY && s !== STATE.CRATER) {
-                    const p = document.createElement("div");
-                    p.className = "piece " + (s===1?"p1":"p2");
-                    cell.appendChild(p);
-                }
-                if (s === STATE.CRATER) cell.classList.add("crater");
+                  const s = this.grid[r][c];
+                  if (s !== STATE.EMPTY && s !== STATE.CRATER) {
+                      const p = document.createElement("div");
+                      p.className = "piece " + (s===1?"p1":"p2");
+                      cell.appendChild(p);
+                  }
+                  if (s === STATE.CRATER) cell.classList.add("crater");
 
-                this.boardElement.appendChild(cell);
-            }
-        }
-    }
+                  this.boardElement.appendChild(cell);
+              }
+          }
+      }
 
-    updateUI() {
-        this.statusText.textContent =
-            this.uiTargetingMode ? "TARGETING..." :
-            this.currentPlayer === 1 ? "COMMANDER A TURN" : "COMMANDER B TURN";
-    }
+      updateUI() {
+          this.statusText.textContent =
+              this.uiTargetingMode ? "TARGETING..." :
+              this.currentPlayer === 1 ? "COMMANDER A TURN" : "COMMANDER B TURN";
+      }
 
-    uiToggleNuke() {
-        if (this.nukes[this.currentPlayer] <= 0) return;
-        this.uiTargetingMode = !this.uiTargetingMode;
-        this.updateUI();
-    }
+      uiToggleNuke() {
+          if (this.nukes[this.currentPlayer] <= 0) return;
+          this.uiTargetingMode = !this.uiTargetingMode;
+          this.updateUI();
+      }
 
-    uiToggleBoost() {
-        if (this.boosters[this.currentPlayer] <= 0) return;
-        this.uiBoostActive = !this.uiBoostActive;
-        this.uiTargetingMode = true;
-        this.updateUI();
-    }
+      uiToggleBoost() {
+          if (this.boosters[this.currentPlayer] <= 0) return;
+          this.uiBoostActive = !this.uiBoostActive;
+          this.uiTargetingMode = true;
+          this.updateUI();
+      }
 
-    showToast(msg) {
-        this.toast.textContent = msg;
-        this.toast.classList.add("show");
-        setTimeout(()=>this.toast.classList.remove("show"),2000);
-    }
-}
+      showToast(msg) {
+          this.toast.textContent = msg;
+          this.toast.classList.add("show");
+          setTimeout(()=>this.toast.classList.remove("show"),2000);
+      }
+  }
 
-const game = new Connect5();
-initMultiplayer(game);
+  const game = new Connect5();
+  initMultiplayer(game);
+
+});
 </script>
+
+</body>
+</html>
