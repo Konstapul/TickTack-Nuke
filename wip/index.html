@@ -550,7 +550,7 @@ let multiplayerEnabled = false;
 
 function initMultiplayer(gameInstance) {
 try {
-socket = new WebSocket("ws://localhost:8080");
+socket = new WebSocket("https://ticktack-nuke-server.onrender.com");
 
 socket.onopen = () => {
             console.log("Connected to multiplayer server");
