@@ -574,7 +574,6 @@ const data = JSON.parse(event.data);
         console.warn("Multiplayer unavailable");
     }
         socket.onclose = () => multiplayerEnabled = false;
-    } catch {}
 }
 
 class Connect5 {
