@@ -158,11 +158,15 @@
             align-items: center;
             position: relative;
             transition: all 0.3s;
+            opacity: 0.7;
         }
 
         .player-score.active-turn {
             border-color: currentColor;
-            box-shadow: 0 0 20px rgba(255,255,255, 0.05);
+            box-shadow: 0 0 25px rgba(255,255,255, 0.15), inset 0 0 10px rgba(255,255,255,0.05);
+            opacity: 1;
+            transform: scale(1.02);
+            z-index: 10;
         }
         
         .p1-panel { color: var(--p1-color); }
@@ -260,6 +264,7 @@
             overflow: hidden; 
         }
         
+        /* Crater - High Contrast Hazard Stripes */
         .cell.crater {
             background: repeating-linear-gradient(
                 45deg,
@@ -270,6 +275,12 @@
             );
             border: 1px solid #ff0000;
             box-shadow: inset 0 0 10px #ff0000;
+        }
+
+        /* Light red highlight for invalid isolation spots */
+        .cell.invalid-isolation {
+            background: rgba(255, 50, 50, 0.15);
+            box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.3);
         }
 
         .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
@@ -383,9 +394,10 @@
 <body>
 
 <div class="app-root" id="app-root">
+
     <h1>
         <span>WAR ROOM // SYMMETRIC</span>
-        <span class="sim-header-right">V.6.4 [FIXED_INIT]</span>
+        <span class="sim-header-right">V.6.9 [ISO_VISUAL]</span>
     </h1>
 
     <div class="game-wrapper">
@@ -396,7 +408,7 @@
                 <div class="mini-grid grid-5row">
                     <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
                 </div>
-                <div class="tut-desc">Win a Point + Earn Nuke.</div>
+                <div class="tut-desc">Win a Point.</div>
             </div>
             <div class="tut-item">
                 <span class="tut-label">2x2 SQUARE</span>
@@ -404,7 +416,7 @@
                     <div class="mini-cell active"></div><div class="mini-cell active"></div>
                     <div class="mini-cell active"></div><div class="mini-cell active"></div>
                 </div>
-                <div class="tut-desc">Bonus Turn (Must be isolated).</div>
+                <div class="tut-desc">Bonus Turn.</div>
             </div>
             <div class="tut-item">
                 <span class="tut-label">PLUS (+)</span>
@@ -442,7 +454,7 @@
 
             <div class="status-bar">
                 <div id="status-text" class="status-text">INITIALIZING...</div>
-                <div id="iso-indicator" class="isolation-indicator">ISOLATION: CHECKING</div>
+                <div id="iso-indicator" class="isolation-indicator">CHECKING</div>
             </div>
 
             <div class="board-container">
@@ -470,9 +482,29 @@
         </div>
 
         <div class="side-panel">
+            <h3>RULES</h3>
+            <div class="tut-item">
+                <span class="tut-label">WIN CONDITION</span>
+                <div class="tut-desc">Score 3 points.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">TIE-BREAKER</span>
+                <div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div>
+            </div>
+            
             <h3>ORDNANCE</h3>
-            <div class="tut-item"><span class="tut-label">BUNKERS</span><div class="tut-desc">Immune to Standard Nukes.</div></div>
-            <div class="tut-item"><span class="tut-label">BOOSTED NUKE</span><div class="tut-desc">Radius 2. Destroys Bunkers.</div></div>
+            <div class="tut-item">
+                <span class="tut-label">ACQUIRING NUKES</span>
+                <div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">STANDARD NUKE</span>
+                <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">BOOSTED NUKE</span>
+                <div class="tut-desc">Radius 2 (Diamond).<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
+            </div>
         </div>
     </div>
 </div>
@@ -482,7 +514,7 @@
         <h2 id="winner-title">VICTORY</h2>
         <div class="modal-btn-group">
             <button class="btn-system" onclick="game.resetRound()">RESTART SIMULATION</button>
-            <button class="btn-system" style="border-color:#666" onclick="document.getElementById('overlay').classList.remove('visible')">VIEW BOARD</button>
+            <button class="btn-view-board" onclick="game.hideOverlay()">VIEW BOARD STATE</button>
         </div>
     </div>
 </div>
@@ -509,11 +541,11 @@
 
 <script>
 /**
-* CONNECT 5: WAR ROOM v6.4
- * Refactored for Multiplayer capability.
- * All state changes now pass through applyMove().
- * FIXED INPUT HANDLING + MULTIPLAYER SAFE
-*/
+ * CONNECT 5: WAR ROOM v6.9
+ * - Removed "+ Earn Nuke" text.
+ * - Added visual highlight for non-isolated cells during bonus turn.
+ * - Updated Isolation Status text to Purple & Descriptive.
+ */
 
 class SoundSystem {
     constructor() { this.ctx = null; }
@@ -533,38 +565,40 @@ class SoundSystem {
         const g = this.ctx.createGain(); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
         s.connect(g); g.connect(this.ctx.destination); s.start();
     }
-    playPlace() { this.playTone(600, 'sine', 0.1); }
+    playPlaceP1() { this.playTone(600, 'sine', 0.1); } 
+    playPlaceP2() { this.playTone(400, 'sine', 0.12); } 
     playBonus() { this.playTone(800, 'square', 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2), 100); }
     playScore() { this.playTone(400, 'sawtooth', 0.1); setTimeout(() => this.playTone(600, 'sawtooth', 0.1), 100); setTimeout(() => this.playTone(900, 'sawtooth', 0.4), 200); }
     playNuke() { this.playNoise(0.5); }
     playBunker() { this.playTone(150, 'square', 0.4, 0.2); }
     playError() { this.playTone(150, 'sawtooth', 0.2); }
 }
-const STATE = { EMPTY:0, P1:1, P2:2, P1_SCORED:3, P2_SCORED:4, P1_BUNKER:5, P2_BUNKER:6, P1_BUNKER_SCORED:7, P2_BUNKER_SCORED:8, CRATER:9 };
 
 const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5, P2_BUNKER: 6, P1_BUNKER_SCORED: 7, P2_BUNKER_SCORED: 8, CRATER: 9 };
+
 // --- MULTIPLAYER CLIENT ---
 
 let socket = null;
 let multiplayerEnabled = false;
 
 function initMultiplayer(gameInstance) {
-try {
-socket = new WebSocket("ws://localhost:8080");
+    try {
+        socket = new WebSocket("wss://ticktack-nuke-server.onrender.com");
 
-socket.onopen = () => {
+        socket.onopen = () => {
             console.log("Connected to multiplayer server");
-multiplayerEnabled = true;
-gameInstance.showToast("MULTIPLAYER CONNECTED");
-};
+            multiplayerEnabled = true;
+            gameInstance.showToast("MULTIPLAYER CONNECTED");
+        };
 
-socket.onmessage = (event) => {
-const data = JSON.parse(event.data);
-            if (data.type === "state") {
-                gameInstance.setState(data.state);
-            }
-            if (data.type === "state") gameInstance.setState(data.state);
-};
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.type === "state") {
+                    gameInstance.setState(data.state);
+                }
+            } catch(e) { console.error("Bad message", e); }
+        };
 
         socket.onclose = () => {
             console.log("Disconnected from server");
@@ -574,48 +608,33 @@ const data = JSON.parse(event.data);
     } catch (e) {
         console.warn("Multiplayer unavailable");
     }
-        socket.onclose = () => multiplayerEnabled = false;
-    } catch {}
 }
 
 class Connect5 {
-constructor() {
-        // Initial Constants
-this.mapSize = 15;
+    constructor() {
+        this.mapSize = 15;
         this.winningScore = 3;
         this.sound = new SoundSystem();
         
-        // Volatile State (Capturable by getState)
         this.grid = [];
-        this.grid = Array(this.mapSize).fill().map(()=>Array(this.mapSize).fill(STATE.EMPTY));
-this.currentPlayer = 1;
+        this.currentPlayer = 1;
         this.scores = { 1: 0, 2: 0 };
         this.nukes = { 1: 0, 2: 0 };
         this.boosters = { 1: 0, 2: 0 };
         this.bunkers = { 1: 0, 2: 0 };
-        this.scores = {1:0,2:0};
-        this.nukes = {1:0,2:0};
-        this.boosters = {1:0,2:0};
-        this.bunkers = {1:0,2:0};
-this.bonusTurn = false;
-this.ignoreIsolation = false;
-this.lastMove = null;
-this.gameActive = true;
+        this.bonusTurn = false;
+        this.ignoreIsolation = false;
+        this.lastMove = null;
+        this.gameActive = true;
 
-        // UI-only state (Not shared via getState)
-this.uiTargetingMode = false;
-this.uiBoostActive = false;
+        this.uiTargetingMode = false;
+        this.uiBoostActive = false;
 
-        // UI Refs (Initialized in Constructor now)
         this.boardElement = document.getElementById('board');
         this.appRoot = document.getElementById('app-root');
         this.statusText = document.getElementById('status-text');
         this.isoIndicator = document.getElementById('iso-indicator');
         this.toast = document.getElementById('toast');
-        this.boardElement = document.getElementById("board");
-        this.statusText = document.getElementById("status-text");
-        this.isoIndicator = document.getElementById("iso-indicator");
-        this.toast = document.getElementById("toast");
 
         this.init();
     }
@@ -626,8 +645,6 @@ this.uiBoostActive = false;
         this.checkIsolationAvailability();
         document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
     }
-
-    // --- MULTIPLAYER CORE: STATE SERIALIZATION ---
 
     getState() {
         return {
@@ -646,6 +663,7 @@ this.uiBoostActive = false;
     }
 
     setState(state) {
+        this.detectStateChange(state);
         this.grid = state.grid;
         this.currentPlayer = state.currentPlayer;
         this.scores = state.scores;
@@ -658,63 +676,50 @@ this.uiBoostActive = false;
         this.gameActive = state.gameActive;
         this.mapSize = state.mapSize;
 
-        // Refresh visuals
-this.renderBoard();
-this.updateUI();
+        this.renderBoard();
+        this.updateUI();
         if (!this.gameActive) this.showEndScreen();
-}
+    }
 
-    // --- MULTIPLAYER CORE: ACTION HANDLING ---
+    detectStateChange(newState) {
+        if (newState.scores[1] > this.scores[1] || newState.scores[2] > this.scores[2]) {
+            this.sound.playScore();
+            return; 
+        }
+        if (newState.lastMove && (!this.lastMove || newState.lastMove.r !== this.lastMove.r || newState.lastMove.c !== this.lastMove.c)) {
+             const movedCell = newState.grid[newState.lastMove.r][newState.lastMove.c];
+             const owner = this.getPlayerId(movedCell);
+             if (owner === 1) this.sound.playPlaceP1();
+             else if (owner === 2) this.sound.playPlaceP2();
+        }
+    }
 
     applyMove(move) {
-    if (!this.gameActive) return;
-    // ---------- INPUT FIX ----------
-    handleCellClick(r, c) {
         if (!this.gameActive) return;
 
-    // Local execution
-    if (move.type === 'place') {
-        this.internalExecutePlace(move.r, move.c);
-    } else if (move.type === 'nuke') {
-        this.internalExecuteNuke(move.r, move.c, move.boosted);
-        if (this.uiTargetingMode) {
-            this.applyMove({
-                type: "nuke",
-                r, c,
-                boosted: this.uiBoostActive
-            });
-        } else {
-            this.applyMove({
-                type: "place",
-                r, c
-            });
+        if (move.type === 'place') {
+            this.internalExecutePlace(move.r, move.c);
+        } else if (move.type === 'nuke') {
+            this.internalExecuteNuke(move.r, move.c, move.boosted);
         }
-}
 
-    this.updateUI();
+        this.updateUI();
 
-    // Multiplayer sync
-    if (multiplayerEnabled && socket?.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({
-            type: "state",
-            state: this.getState()
-    // ---------- MULTIPLAYER CORE ----------
-    getState() {
-        return JSON.parse(JSON.stringify({
-            grid:this.grid,
-            currentPlayer:this.currentPlayer,
-            scores:this.scores,
-            nukes:this.nukes,
-            boosters:this.boosters,
-            bunkers:this.bunkers,
-            bonusTurn:this.bonusTurn,
-            ignoreIsolation:this.ignoreIsolation,
-            lastMove:this.lastMove,
-            gameActive:this.gameActive,
-            mapSize:this.mapSize
-}));
-}
-}
+        if (multiplayerEnabled && socket?.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                type: "state",
+                state: this.getState()
+            }));
+        }
+    }
+
+    handleCellClick(r, c) {
+        if (this.uiTargetingMode) {
+            this.applyMove({ type: 'nuke', r, c, boosted: this.uiBoostActive });
+        } else {
+            this.applyMove({ type: 'place', r, c });
+        }
+    }
 
     uiToggleNuke() {
         if (this.nukes[this.currentPlayer] <= 0) { this.showToast("SILOS EMPTY"); this.sound.playError(); return; }
@@ -725,15 +730,12 @@ this.updateUI();
 
     uiToggleBoost() {
         if (this.boosters[this.currentPlayer] <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
+        if (this.nukes[this.currentPlayer] <= 0) { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
+        
         this.uiBoostActive = !this.uiBoostActive;
-        if (!this.uiTargetingMode) this.uiTargetingMode = true; // Auto-enable nuke mode if boost clicked
-    setState(s) {
-        Object.assign(this, s);
-        this.renderBoard();
-this.updateUI();
-}
-
-    // --- INTERNAL LOGIC (Private to class) ---
+        if (!this.uiTargetingMode) this.uiTargetingMode = true; 
+        this.updateUI();
+    }
 
     internalExecutePlace(r, c) {
         if (this.grid[r][c] !== STATE.EMPTY) { this.sound.playError(); return; }
@@ -746,7 +748,9 @@ this.updateUI();
         const prevMove = this.lastMove;
         this.grid[r][c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
         this.lastMove = { r, c };
-        this.sound.playPlace();
+        
+        if (this.currentPlayer === 1) this.sound.playPlaceP1();
+        else this.sound.playPlaceP2();
         
         this.updateCellVisual(r, c);
         if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c);
@@ -755,7 +759,6 @@ this.updateUI();
     }
 
     internalExecuteNuke(r, c, boosted) {
-        // Validation logic
         if (this.nukes[this.currentPlayer] < 1) return;
         if (boosted && this.boosters[this.currentPlayer] < 1) return;
         
@@ -780,7 +783,6 @@ this.updateUI();
         this.sound.playNuke();
         document.querySelector('.board-container').classList.add('impact');
         
-        // Immediate state update (In multiplayer, we want results to be deterministic)
         affected.forEach(pos => {
             const s = this.grid[pos.r][pos.c];
             const isBunker = (s >= 5 && s <= 8);
@@ -794,7 +796,6 @@ this.updateUI();
         this.nukes[this.currentPlayer]--;
         if (boosted) this.boosters[this.currentPlayer]--;
         
-        // Clear UI flags after successful move
         this.uiTargetingMode = false;
         this.uiBoostActive = false;
         this.bonusTurn = false;
@@ -805,8 +806,6 @@ this.updateUI();
             this.switchTurn();
         }, 350);
     }
-    applyMove(move) {
-        if (!this.gameActive) return;
 
     resolvePostMove(r, c) {
         const player = this.currentPlayer;
@@ -818,11 +817,7 @@ this.updateUI();
             this.ignoreIsolation = false;
             this.sound.playScore();
             if (this.scores[player] >= this.winningScore) { this.endRound("SCORE"); return; }
-        if (move.type === "place") {
-            if (this.grid[move.r][move.c] !== STATE.EMPTY) return;
-            this.grid[move.r][move.c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
-            this.lastMove = {r:move.r,c:move.c};
-this.switchTurn();
+            this.switchTurn();
             return;
         }
 
@@ -840,13 +835,12 @@ this.switchTurn();
                 const scored = (s === 3 || s === 4 || s === 7 || s === 8);
                 this.grid[pos.r][pos.c] = player === 1 ? (scored ? 7 : 5) : (scored ? 8 : 6);
                 this.updateCellVisual(pos.r, pos.c);
-                // Add forming animation class
                 const cell = this.getCell(pos.r, pos.c);
                 const piece = cell.querySelector('.piece');
                 if (piece) piece.classList.add('forming');
             });
             triggers.push("BUNKERS ESTABLISHED");
-}
+        }
 
         if (!this.bonusTurn) {
             const square = this.checkForSquare(r, c);
@@ -862,35 +856,28 @@ this.switchTurn();
 
         if (earnedBonus) {
             this.bonusTurn = true;
-            this.checkIsolationAvailability(); // Check logic for next move
+            this.checkIsolationAvailability(); 
+            this.refreshGridVisuals(); // Update isolation highlights
             return;
         } 
         
         if (this.bonusTurn) {
-            // If we were in a bonus turn and didn't earn another, turn ends
             this.bonusTurn = false;
             this.ignoreIsolation = false;
+            this.refreshGridVisuals(); // Clear highlights
             this.switchTurn();
         } else {
-        if (move.type === "nuke") {
-            if (this.nukes[this.currentPlayer] <= 0) return;
-            this.grid[move.r][move.c] = STATE.CRATER;
-            this.nukes[this.currentPlayer]--;
-            this.uiTargetingMode = false;
-            this.uiBoostActive = false;
-this.switchTurn();
-}
+            this.switchTurn();
+        }
     }
-
-    // --- LOGIC HELPERS ---
 
     switchTurn() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
         this.uiTargetingMode = false;
         this.uiBoostActive = false;
         this.checkIsolationAvailability();
-        this.renderBoard();
-this.updateUI();
+        this.refreshGridVisuals();
+        this.updateUI();
     }
 
     getPlayerId(s) {
@@ -898,6 +885,8 @@ this.updateUI();
         if ([2,4,6,8].includes(s)) return 2;
         return 0;
     }
+    
+    isActivePiece(s) { return (s === 1 || s === 2 || s === 5 || s === 6); }
 
     isValid(r, c) { return r >= 0 && r < this.mapSize && c >= 0 && c < this.mapSize; }
 
@@ -935,17 +924,17 @@ this.updateUI();
             for (let i=0; i<2; i++) {
                 for (let j=0; j<2; j++) {
                     const nr = r+dr+i, nc = c+dc+j;
-                    if (!this.isValid(nr, nc) || this.getPlayerId(this.grid[nr][nc]) !== p) { match = false; break; }
+                    if (!this.isValid(nr, nc)) { match = false; break; }
+                    const s = this.grid[nr][nc];
+                    if (this.getPlayerId(s) !== p || !this.isActivePiece(s)) { match = false; break; }
                     coords.push({r:nr, c:nc});
                 }
                 if (!match) break;
             }
             if (match) return coords;
-        if (multiplayerEnabled && socket?.readyState === 1) {
-            socket.send(JSON.stringify({type:"state",state:this.getState()}));
-}
+        }
         return null;
-}
+    }
 
     checkForPlus(r, c) {
         const p = this.currentPlayer;
@@ -954,17 +943,20 @@ this.updateUI();
             const cr = r+dr, cc = c+dc;
             if (!this.isValid(cr, cc)) continue;
             const cs = this.grid[cr][cc];
-            if ([5,6,7,8].includes(cs)) continue; // Already bunker
-            if (this.getPlayerId(cs) !== p) continue;
+            if ([5,6,7,8].includes(cs)) continue; 
+            if (this.getPlayerId(cs) !== p || !this.isActivePiece(cs)) continue;
             const arms = [[0,1], [0,-1], [1,0], [-1,0]];
-            if (arms.every(([ar, ac]) => this.isValid(cr+ar, cc+ac) && this.getPlayerId(this.grid[cr+ar][cc+ac]) === p)) {
+            if (arms.every(([ar, ac]) => {
+                const tr = cr+ar, tc = cc+ac;
+                if (!this.isValid(tr, tc)) return false;
+                const ts = this.grid[tr][tc];
+                return this.getPlayerId(ts) === p && this.isActivePiece(ts);
+            })) {
                 return [[0,0], ...arms].map(([ar, ac]) => ({ r: cr+ar, c: cc+ac }));
             }
         }
         return null;
-    switchTurn() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-}
+    }
 
     checkScoring(r, c) {
         const p = this.currentPlayer;
@@ -981,23 +973,8 @@ this.updateUI();
                 if (seg.every(cell => this.getPlayerId(cell.s) === p && ![3,4,7,8].includes(cell.s))) {
                     this.applyScoreSegment(seg);
                     found = true;
-    // ---------- UI ----------
-    renderBoard() {
-        this.boardElement.innerHTML = "";
-        this.boardElement.style.gridTemplateColumns = `repeat(${this.mapSize},1fr)`;
-
-        for (let r=0;r<this.mapSize;r++) {
-            for (let c=0;c<this.mapSize;c++) {
-                const cell = document.createElement("div");
-                cell.className = "cell";
-                cell.onclick = () => this.handleCellClick(r,c);
-
-                const s = this.grid[r][c];
-                if (s !== STATE.EMPTY && s !== STATE.CRATER) {
-                    const p = document.createElement("div");
-                    p.className = "piece " + (s===1?"p1":"p2");
-                    cell.appendChild(p);
-}
+                    break; 
+                }
             }
         });
         return found;
@@ -1017,11 +994,8 @@ this.updateUI();
             this.updateCellVisual(cell.r, cell.c);
         });
     }
-                if (s === STATE.CRATER) cell.classList.add("crater");
 
     checkBoardFull() { return this.grid.every(row => row.every(c => c !== STATE.EMPTY)); }
-
-    // --- UI RENDERERS ---
 
     createBoard(size) {
         this.mapSize = size;
@@ -1038,11 +1012,20 @@ this.updateUI();
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.onclick = () => this.handleCellClick(r, c);
-this.boardElement.appendChild(cell);
+                this.boardElement.appendChild(cell);
                 this.updateCellVisual(r, c);
-}
-}
-}
+            }
+        }
+    }
+
+    // New helper to refresh visuals of all cells (for isolation highlight)
+    refreshGridVisuals() {
+        for(let r=0; r<this.mapSize; r++) {
+            for(let c=0; c<this.mapSize; c++) {
+                this.updateCellVisual(r, c);
+            }
+        }
+    }
 
     updateCellVisual(r, c, animateBunker = false) {
         const cell = this.getCell(r, c);
@@ -1052,6 +1035,10 @@ this.boardElement.appendChild(cell);
         cell.innerHTML = '';
         if (s === STATE.CRATER) { cell.classList.add('crater'); return; }
         if (s === STATE.EMPTY) {
+            // Apply invalid highlight if bonus turn requires isolation and this cell fails
+            if (this.bonusTurn && !this.ignoreIsolation) {
+                if (!this.isIsolated(r, c)) cell.classList.add('invalid-isolation');
+            }
             if (this.uiTargetingMode && !this.uiBoostActive) cell.classList.add('invalid-target');
             return;
         }
@@ -1072,7 +1059,7 @@ this.boardElement.appendChild(cell);
 
     getCell(r, c) { return this.boardElement?.children[r * this.mapSize + c]; }
 
-updateUI() {
+    updateUI() {
         const p = this.currentPlayer;
         document.getElementById('p1-panel').classList.toggle('active-turn', p === 1);
         document.getElementById('p2-panel').classList.toggle('active-turn', p === 2);
@@ -1092,10 +1079,13 @@ updateUI() {
         
         this.statusText.textContent = txt;
         this.statusText.className = statusClass;
+        
+        this.statusText.style.color = (this.bonusTurn || this.uiTargetingMode) ? "var(--text-boost)" : (p === 1 ? "var(--text-main)" : "var(--text-sec)");
 
         const iso = this.isoIndicator;
         if (this.bonusTurn) {
-            iso.textContent = this.ignoreIsolation ? "ISO: IMPOSSIBLE" : "ISO: REQUIRED";
+            iso.textContent = this.ignoreIsolation ? "ISOLATION: IMPOSSIBLE; PLACE FREELY" : "ISOLATION: REQUIRED";
+            iso.style.color = "var(--text-boost)";
             iso.classList.toggle('available', this.bonusTurn && !this.ignoreIsolation);
         } else {
             iso.textContent = "";
@@ -1120,10 +1110,7 @@ updateUI() {
         const t = this.toast;
         t.textContent = m; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 2000);
-        this.statusText.textContent =
-            this.uiTargetingMode ? "TARGETING..." :
-            this.currentPlayer === 1 ? "COMMANDER A TURN" : "COMMANDER B TURN";
-}
+    }
 
     endRound(reason) {
         this.gameActive = false;
@@ -1139,24 +1126,16 @@ updateUI() {
         else if (this.bunkers[2] > this.bunkers[1]) win = "COMMANDER B (BUNKERS)";
         h2.textContent = win === "DRAW" ? "STALEMATE" : `${win} VICTORIOUS`;
         document.getElementById('overlay').classList.add('visible');
-    uiToggleNuke() {
-        if (this.nukes[this.currentPlayer] <= 0) return;
-        this.uiTargetingMode = !this.uiTargetingMode;
-        this.updateUI();
-}
+    }
 
     resetRound() {
         this.scores = {1:0, 2:0}; this.nukes = {1:0, 2:0}; this.boosters = {1:0, 2:0}; this.bunkers = {1:0, 2:0};
         this.currentPlayer = 1; this.bonusTurn = false; this.lastMove = null; this.gameActive = true;
         this.uiTargetingMode = false; this.uiBoostActive = false;
         this.createBoard(this.mapSize);
-    uiToggleBoost() {
-        if (this.boosters[this.currentPlayer] <= 0) return;
-        this.uiBoostActive = !this.uiBoostActive;
-        this.uiTargetingMode = true;
-this.updateUI();
+        this.updateUI();
         document.getElementById('overlay').classList.remove('visible');
-}
+    }
 
     setMapSize(s) { this.mapSize = s; this.resetRound(); document.getElementById('settings-overlay').classList.remove('visible'); }
     setScale(v) { document.getElementById('app-root').style.transform = `scale(${v})`; }
@@ -1165,11 +1144,6 @@ this.updateUI();
 
     saveToLocal() { localStorage.setItem('con5_v6_save', JSON.stringify(this.getState())); this.showToast("LOCAL STATE SAVED"); }
     loadFromLocal() { const s = localStorage.getItem('con5_v6_save'); if (s) { this.setState(JSON.parse(s)); this.showToast("LOCAL STATE LOADED"); return true; } return false; }
-    showToast(msg) {
-        this.toast.textContent = msg;
-        this.toast.classList.add("show");
-        setTimeout(()=>this.toast.classList.remove("show"),2000);
-    }
 }
 
 const game = new Connect5();
