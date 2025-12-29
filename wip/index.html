@@ -92,7 +92,7 @@
             color: #889;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
         }
         
         .side-panel h3 {
@@ -103,9 +103,15 @@
             font-size: 0.8rem;
         }
 
-        .tut-item { margin-bottom: 10px; text-align: center; display: flex; flex-direction: column; align-items: center; }
-        .tut-label { color: #fff; font-weight: bold; display: block; margin-bottom: 4px; font-size: 0.75rem; }
-        .tut-desc { line-height: 1.3; margin-top: 4px; color: #aaa; }
+        .tut-item { 
+            margin-bottom: 15px; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .tut-label { color: #fff; font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.75rem; }
+        .tut-desc { line-height: 1.3; margin-top: 6px; color: #aaa; }
 
         /* Chat/Log Styles */
         .chat-container {
@@ -136,117 +142,297 @@
         }
 
         .mini-grid {
-            display: grid; gap: 2px; background: rgba(0,0,0,0.5);
-            padding: 4px; border: 1px solid #334; justify-content: center;
-            width: max-content; /* Fix: prevents stretching in flex container */
-            margin: 0 auto;
+            display: grid;
+            gap: 2px;
+            background: rgba(0,0,0,0.5);
+            padding: 4px;
+            border: 1px solid #334;
         }
-        .mini-cell { width: 10px; height: 10px; background: #1a2a3a; border-radius: 50%; }
-        .mini-cell.active { background: var(--text-main); box-shadow: 0 0 5px var(--text-main); }
+        .mini-cell {
+            width: 10px;
+            height: 10px;
+            background: #1a2a3a;
+            border-radius: 50%;
+        }
+        .mini-cell.active {
+            background: var(--text-main);
+            box-shadow: 0 0 5px var(--text-main);
+        }
         .grid-5row { grid-template-columns: repeat(5, 1fr); }
         .grid-2x2 { grid-template-columns: repeat(2, 1fr); }
         .grid-plus { grid-template-columns: repeat(3, 1fr); }
 
-        @media (max-width: 1000px) { .side-panel { display: none; } }
+        @media (max-width: 1000px) {
+            .side-panel { display: none; }
+        }
 
-        .game-center { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 600px; }
+        .game-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
 
-        .scoreboard { display: flex; gap: 15px; margin-bottom: 1rem; width: 100%; }
+        .scoreboard {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
         .player-score {
-            background: var(--panel-bg); border: var(--border-style); padding: 12px;
-            flex: 1; display: flex; flex-direction: column; align-items: center;
-            position: relative; transition: all 0.3s; opacity: 0.7;
+            background: var(--panel-bg);
+            border: var(--border-style);
+            padding: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            transition: all 0.3s;
+            opacity: 0.7;
         }
+
         .player-score.active-turn {
-            border-color: currentColor; opacity: 1; z-index: 10;
-            box-shadow: 0 0 25px rgba(255,255,255, 0.15), inset 0 0 10px rgba(255,255,255,0.05); transform: scale(1.02);
+            border-color: currentColor;
+            box-shadow: 0 0 25px rgba(255,255,255, 0.15), inset 0 0 10px rgba(255,255,255,0.05);
+            opacity: 1;
+            transform: scale(1.02);
+            z-index: 10;
         }
+        
         .p1-panel { color: var(--p1-color); }
         .p2-panel { color: var(--p2-color); }
-        .score-val { font-size: 2.5rem; font-weight: bold; margin: 5px 0 10px 0; text-shadow: 0 0 10px currentColor; }
+
+        .score-val {
+            font-size: 2.5rem;
+            font-weight: bold;
+            line-height: 1;
+            margin: 5px 0 10px 0;
+            text-shadow: 0 0 10px currentColor;
+        }
+
         .player-label { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
 
-        .resources-row { display: flex; gap: 5px; width: 100%; justify-content: center; }
+        .resources-row {
+            display: flex;
+            gap: 5px;
+            width: 100%;
+            justify-content: center;
+        }
+
         .res-item {
-            font-size: 0.7rem; border: 1px solid currentColor; background: rgba(0,0,0,0.3);
-            text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 4px 2px;
+            font-size: 0.7rem;
+            border: 1px solid currentColor;
+            background: rgba(0,0,0,0.3);
+            text-align: center;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 4px 2px;
         }
         .res-val { font-size: 1rem; font-weight: bold; line-height: 1; }
         .res-icon { font-size: 0.9rem; margin-bottom: 2px; display: block; }
 
-        .status-bar { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85rem; font-weight: bold; min-height: 1.2em; }
+        .status-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            min-height: 1.2em;
+        }
         .status-text { animation: blink-slow 2s infinite; }
         .status-bonus { color: var(--text-boost); animation: blink-fast 0.5s infinite alternate; }
         
-        .isolation-indicator { font-size: 0.7rem; padding: 2px 6px; border: 1px solid #333; color: #555; transition: all 0.3s; }
-        .isolation-indicator.available { border-color: var(--text-main); color: var(--text-main); box-shadow: 0 0 5px rgba(100, 210, 255, 0.2); }
+        .isolation-indicator {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border: 1px solid #333;
+            color: #555;
+            transition: all 0.3s;
+        }
+        .isolation-indicator.available {
+            border-color: var(--text-main);
+            color: var(--text-main);
+            box-shadow: 0 0 5px rgba(100, 210, 255, 0.2);
+        }
         
         @keyframes blink-slow { 50% { opacity: 0.6; } }
         @keyframes blink-fast { from { opacity: 1; text-shadow: 0 0 10px currentColor; } to { opacity: 0.5; } }
 
-        .board-container { position: relative; padding: 4px; border: 1px solid var(--grid-color); background: rgba(0,0,0,0.5); box-shadow: 0 0 30px rgba(0,0,0,0.8); }
+        .board-container {
+            position: relative;
+            padding: 4px;
+            border: 1px solid var(--grid-color);
+            background: rgba(0,0,0,0.5);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+        }
+        
         .board-container.impact { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
         @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
 
-        .board { display: grid; width: min(90vw, 550px); height: min(90vw, 550px); background: transparent; border-top: 1px solid var(--grid-color); border-left: 1px solid var(--grid-color); cursor: crosshair; }
+        .board {
+            display: grid;
+            width: min(90vw, 550px);
+            height: min(90vw, 550px);
+            background: transparent;
+            border-top: 1px solid var(--grid-color);
+            border-left: 1px solid var(--grid-color);
+            cursor: crosshair;
+        }
         
-        .cell { position: relative; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--grid-color); border-bottom: 1px solid var(--grid-color); box-sizing: border-box; overflow: hidden; }
-        .cell.crater { background: repeating-linear-gradient(45deg, #550000, #550000 5px, #000000 5px, #000000 10px); border: 1px solid #ff0000; box-shadow: inset 0 0 10px #ff0000; }
+        .cell {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--grid-color);
+            border-bottom: 1px solid var(--grid-color);
+            box-sizing: border-box; 
+            overflow: hidden; 
+        }
         
-        /* Red highlight for invalid isolation spots (including occupied ones during bonus turn) */
-        .cell.invalid-isolation { background: rgba(255, 50, 50, 0.2); box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.4); }
+        .cell.crater {
+            background: repeating-linear-gradient(
+                45deg,
+                #550000,
+                #550000 5px,
+                #000000 5px,
+                #000000 10px
+            );
+            border: 1px solid #ff0000;
+            box-shadow: inset 0 0 10px #ff0000;
+        }
+
+        .cell.invalid-isolation {
+            background: rgba(255, 50, 50, 0.2);
+            box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.4);
+        }
 
         .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
         .board.targeting .cell.invalid-target:hover { background: rgba(255, 0, 0, 0.2); box-shadow: inset 0 0 10px red; cursor: not-allowed; }
-        .board.targeting-boosted .cell:hover { background: rgba(217, 70, 239, 0.2); box-shadow: inset 0 0 15px var(--text-boost); }
+        
+        .board.targeting-boosted .cell:hover { 
+            background: rgba(217, 70, 239, 0.2); 
+            box-shadow: inset 0 0 15px var(--text-boost); 
+        }
 
-        .piece { width: 60%; height: 60%; border-radius: 50%; transition: all 0.2s; box-sizing: border-box; box-shadow: 0 0 8px currentColor; pointer-events: none; }
+        .piece {
+            width: 60%; height: 60%; border-radius: 50%;
+            transition: all 0.2s; 
+            box-sizing: border-box;
+            box-shadow: 0 0 8px currentColor;
+        }
         .piece.p1 { background-color: var(--p1-color); color: var(--p1-color); }
         .piece.p2 { background-color: var(--p2-color); color: var(--p2-color); }
+        
         .piece.placed { animation: ping 0.4s ease-out; }
         @keyframes ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 15px transparent; } }
 
-        .piece.last-move { box-shadow: 0 0 0 2px #fff, 0 0 15px #fff !important; z-index: 10; }
-        .piece.scored { background-color: transparent !important; box-shadow: 0 0 0 3px currentColor, 0 0 15px currentColor; width: 65%; height: 65%; }
+        .piece.last-move {
+            box-shadow: 0 0 0 2px #fff, 0 0 15px #fff !important;
+            z-index: 10;
+        }
+
+        .piece.scored { 
+            background-color: transparent !important;
+            box-shadow: 0 0 0 3px currentColor, 0 0 15px currentColor;
+            width: 65%; height: 65%; 
+        }
         .piece.p1.scored { color: var(--scored-p1); }
         .piece.p2.scored { color: var(--scored-p2); }
-        .piece.square-flash { animation: flash-square 0.5s ease-out; }
-        @keyframes flash-square { 0% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.3); filter: brightness(2); box-shadow: 0 0 20px #fff; } 100% { transform: scale(1); filter: brightness(1); } }
 
-        .piece.bunker { border-radius: 10%; width: 75%; height: 75%; background: repeating-linear-gradient(45deg, currentColor, currentColor 2px, transparent 2px, transparent 4px); box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor; z-index: 5; }
-        .piece.bunker.scored { background: transparent !important; box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor; }
-        .piece.bunker.forming { animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes bunker-lock { 0% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(0.8); } 100% { transform: scale(1); opacity: 1; } }
+        .piece.square-flash {
+            animation: flash-square 0.5s ease-out;
+        }
+        @keyframes flash-square {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(2); box-shadow: 0 0 20px #fff; }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
 
-        .controls-area { width: 100%; margin-top: 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 15px; }
+        .piece.bunker {
+            border-radius: 10%; 
+            width: 75%; height: 75%;
+            background: repeating-linear-gradient(45deg, currentColor, currentColor 2px, transparent 2px, transparent 4px);
+            box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor;
+            z-index: 5;
+        }
+        
+        .piece.bunker.scored {
+            background: transparent !important;
+            box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor;
+        }
+        
+        .piece.bunker.forming {
+            animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes bunker-lock {
+            0% { transform: scale(1.2); opacity: 0.5; }
+            50% { transform: scale(0.8); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Controls --- */
+        .controls-area {
+            width: 100%; margin-top: 15px;
+            display: grid; grid-template-columns: 2fr 1fr; gap: 15px;
+        }
+        
         .panel { padding: 10px; border: 1px solid #333; background: rgba(0,0,0,0.5); }
         .panel h3 { margin: 0 0 10px 0; font-size: 0.7rem; color: #888; border-bottom: 1px solid #333; letter-spacing: 2px; }
 
         .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-        button { background: transparent; color: #888; border: 1px solid #444; padding: 8px 12px; font-family: inherit; font-size: 0.7rem; font-weight: bold; cursor: pointer; transition: all 0.2s; flex: 1; min-width: 80px; }
+
+        button {
+            background: transparent; color: #888; border: 1px solid #444;
+            padding: 8px 12px; font-family: inherit; font-size: 0.7rem; font-weight: bold;
+            cursor: pointer; transition: all 0.2s; flex: 1; min-width: 80px;
+        }
         button:hover:not(:disabled) { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
         button:disabled { opacity: 0.3; cursor: not-allowed; }
+
         .btn-nuke { color: var(--text-alert); border-color: var(--text-alert); }
         .btn-nuke:hover:not(:disabled) { background: rgba(255, 0, 0, 0.1); box-shadow: 0 0 10px rgba(255,0,0,0.4); }
         .btn-nuke.active { background: var(--text-alert); color: #000; }
+
         .btn-boost { color: var(--text-boost); border-color: var(--text-boost); }
         .btn-boost:hover:not(:disabled) { background: rgba(217, 70, 239, 0.1); box-shadow: 0 0 10px rgba(217, 70, 239, 0.4); }
         .btn-boost.active { background: var(--text-boost); color: #000; box-shadow: 0 0 15px var(--text-boost); animation: pulse-btn 1s infinite; }
+
         @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.8; transform: scale(0.98); } 100% { opacity: 1; } }
+
         .btn-system { border-color: #1a3c5a; }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.5s; }
+        /* --- Overlay --- */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.9); z-index: 100;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
         .overlay.visible { opacity: 1; pointer-events: auto; }
         .modal { border: 2px solid var(--text-main); padding: 40px; text-align: center; background: #050a10; min-width: 300px;}
         .modal h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: var(--text-main); }
         .modal-btn-group { display: flex; flex-direction: column; gap: 15px; }
         .btn-view-board { border-color: #666; color: #aaa; }
+        
         .setting-row { margin-bottom: 20px; text-align: left; }
         .setting-label { display: block; margin-bottom: 10px; font-size: 0.8rem; color: #aaa; }
         .range-wrap { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 0.8rem; }
         input[type=range] { flex: 1; }
 
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(10, 20, 30, 0.95); border: 1px solid var(--text-main); color: var(--text-main); padding: 10px 20px; font-size: 0.8rem; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200; }
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background: rgba(10, 20, 30, 0.95); border: 1px solid var(--text-main);
+            color: var(--text-main); padding: 10px 20px; font-size: 0.8rem;
+            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
+        }
         .toast.show { opacity: 1; }
     </style>
 </head>
@@ -261,44 +447,58 @@
                 <div id="conn-dot" class="status-dot disconnected"></div>
                 <span id="conn-text">OFFLINE</span>
             </div>
-            <span>V.7.2 [VISUAL_POLISH]</span>
+            <span>V.7.0 [MP_LIVE]</span>
         </div>
     </h1>
 
     <div class="game-wrapper">
         
+        <!-- Left Tutorial: Patterns -->
         <div class="side-panel">
             <h3>PATTERNS</h3>
-            <div class="tut-item"><span class="tut-label">5-IN-ROW</span><div class="mini-grid grid-5row"><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div></div><div class="tut-desc">Win a Point.</div></div>
-            <div class="tut-item"><span class="tut-label">2x2 SQUARE</span><div class="mini-grid grid-2x2"><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div></div><div class="tut-desc">Bonus Turn.</div></div>
-            <div class="tut-item"><span class="tut-label">PLUS (+)</span><div class="mini-grid grid-plus"><div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div></div><div class="tut-desc">Creates 5 Bunkers + Earn Booster.</div></div>
-            
-            <h3>COMMUNICATIONS</h3>
-            <div class="room-controls">
-                <label>ROOM:</label>
-                <input type="text" id="room-input" class="room-input" onchange="game.joinRoom(this.value)">
-            </div>
-            <div class="chat-container">
-                <div id="chat-log" class="chat-log"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" class="chat-input" placeholder="Transmit...">
-                    <button class="chat-btn" onclick="game.sendChatFromInput()">></button>
+            <div class="tut-item">
+                <span class="tut-label">5-IN-ROW</span>
+                <div class="mini-grid grid-5row">
+                    <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
                 </div>
+                <div class="tut-desc">Win a Point.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">2x2 SQUARE</span>
+                <div class="mini-grid grid-2x2">
+                    <div class="mini-cell active"></div><div class="mini-cell active"></div>
+                    <div class="mini-cell active"></div><div class="mini-cell active"></div>
+                </div>
+                <div class="tut-desc">Bonus Turn.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">PLUS (+)</span>
+                <div class="mini-grid grid-plus">
+                    <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
+                    <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
+                    <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
+                </div>
+                <div class="tut-desc">Creates 5 Bunkers + Earn Booster.</div>
             </div>
         </div>
 
         <div class="game-center">
             <div class="scoreboard">
+                <!-- Player 1 Panel -->
                 <div class="player-score p1-panel" id="p1-panel">
-                    <div class="player-label">COM-A (CYAN)</div><div class="score-val" id="score1">0</div>
+                    <div class="player-label">COM-A (CYAN)</div>
+                    <div class="score-val" id="score1">0</div>
                     <div class="resources-row">
                         <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke1">0</span></div>
                         <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost1">0</span></div>
                         <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker1">0</span></div>
                     </div>
                 </div>
+                
+                <!-- Player 2 Panel -->
                 <div class="player-score p2-panel" id="p2-panel">
-                    <div class="player-label">COM-B (AMBER)</div><div class="score-val" id="score2">0</div>
+                    <div class="player-label">COM-B (AMBER)</div>
+                    <div class="score-val" id="score2">0</div>
                     <div class="resources-row">
                         <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke2">0</span></div>
                         <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost2">0</span></div>
@@ -336,14 +536,44 @@
             </div>
         </div>
 
+        <!-- Right Tutorial: Rules & Ordnance & Chat -->
         <div class="side-panel">
             <h3>RULES</h3>
-            <div class="tut-item"><span class="tut-label">WIN CONDITION</span><div class="tut-desc">Score 3 points.</div></div>
-            <div class="tut-item"><span class="tut-label">TIE-BREAKER</span><div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div></div>
+            <div class="tut-item">
+                <span class="tut-label">WIN CONDITION</span>
+                <div class="tut-desc">Score 3 points.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">TIE-BREAKER</span>
+                <div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div>
+            </div>
+            
             <h3>ORDNANCE</h3>
-            <div class="tut-item"><span class="tut-label">ACQUIRING NUKES</span><div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div></div>
-            <div class="tut-item"><span class="tut-label">STANDARD NUKE</span><div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div></div>
-            <div class="tut-item"><span class="tut-label">BOOSTED NUKE</span><div class="tut-desc">Radius 2 (Diamond).<br>Target: ANYWHERE.<br>Destroys Bunkers.</div></div>
+            <div class="tut-item">
+                <span class="tut-label">ACQUIRING NUKES</span>
+                <div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">STANDARD NUKE</span>
+                <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
+            </div>
+            <div class="tut-item">
+                <span class="tut-label">BOOSTED NUKE</span>
+                <div class="tut-desc">Radius 2 (Diamond).<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
+            </div>
+
+            <h3>COMMUNICATIONS</h3>
+            <div class="room-controls">
+                <label>ROOM:</label>
+                <input type="text" id="room-input" class="room-input" onchange="game.joinRoom(this.value)">
+            </div>
+            <div class="chat-container">
+                <div id="chat-log" class="chat-log"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Transmit...">
+                    <button class="chat-btn" onclick="game.sendChatFromInput()">></button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -362,11 +592,11 @@
     <div class="modal">
         <h2>SYSTEM SETTINGS</h2>
         <div class="setting-row">
-            <span class="setting-label">MAP SIZE</span>
+            <span class="setting-label">MAP SIZE (RESETS GAME)</span>
             <div class="btn-group">
-                <button onclick="game.setMapSize(13)">13x13</button>
-                <button onclick="game.setMapSize(15)">15x15</button>
-                <button onclick="game.setMapSize(19)">19x19</button>
+                <button onclick="game.setMapSize(13)">13x13 (SKIRMISH)</button>
+                <button onclick="game.setMapSize(15)">15x15 (STANDARD)</button>
+                <button onclick="game.setMapSize(19)">19x19 (GLOBAL)</button>
             </div>
         </div>
         <div class="setting-row">
@@ -380,10 +610,10 @@
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v7.2 [VISUAL_POLISH]
- * - Fixed stretched pattern boxes in tutorial.
- * - Added random Room ID generation.
- * - Expanded red highlight to occupied cells during bonus turns.
+ * CONNECT 5: WAR ROOM v7.0
+ * Fix: Double Chat Messages (Filter by Sender ID).
+ * Fix: Nuke Turn Logic (Synchronous execution, visual-only timeout).
+ * Fix: Bunker Animation (Ignore own echo to preserve local state).
  */
 
 class SoundSystem {
@@ -420,12 +650,11 @@ const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5
 let socket = null;
 let multiplayerEnabled = false;
 let clientId = Math.random().toString(36).substr(2, 9);
-let currentRoom = "WAR-ROOM-" + Math.floor(1000 + Math.random() * 9000); // Random Room ID
+let currentRoom = "WAR-ROOM-" + Math.floor(1000 + Math.random() * 9000); 
 let retryCount = 0;
 const MAX_RETRIES = 3;
 
 function initMultiplayer(gameInstance) {
-    // Set initial room ID in UI
     document.getElementById('room-input').value = currentRoom;
 
     const connect = () => {
@@ -443,7 +672,13 @@ function initMultiplayer(gameInstance) {
                 retryCount = 0;
                 multiplayerEnabled = true;
                 updateConnStatus("CONNECTED", "connected");
-                // Heartbeat
+                
+                socket.send(JSON.stringify({
+                    type: "join",
+                    room: currentRoom,
+                    sender: clientId
+                }));
+
                 setInterval(() => {
                     if(socket.readyState === 1) socket.send(JSON.stringify({type:"ping"}));
                 }, 30000);
@@ -455,11 +690,15 @@ function initMultiplayer(gameInstance) {
                     if (data.room !== currentRoom) return;
 
                     if (data.type === "state") {
+                        // Prevent echo from wiping local state/animations
                         if (data.sender !== clientId) {
                             gameInstance.setState(data.state);
                         }
                     } else if (data.type === "chat") {
-                        gameInstance.addChatMessage(data.msg, data.role);
+                        // Filter out own messages to prevent double posting
+                        if (data.sender !== clientId) {
+                            gameInstance.addChatMessage(data.msg, data.role);
+                        }
                     }
                 } catch(e) { console.error("Bad message", e); }
             };
@@ -512,6 +751,7 @@ class Connect5 {
         this.ignoreIsolation = false;
         this.lastMove = null;
         this.gameActive = true;
+
         this.uiTargetingMode = false;
         this.uiBoostActive = false;
 
@@ -537,10 +777,16 @@ class Connect5 {
         document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
     }
 
+    // --- NETWORKING ---
+
     joinRoom(roomName) {
         currentRoom = roomName || "WAR-ROOM-1";
         this.logSystemMessage(`JOINED FREQUENCY: ${currentRoom}`);
-        // Reset game on room change to prevent state conflict? Optional.
+        if (socket && socket.readyState === 1) {
+             socket.close(); 
+        } else if (!socket || socket.readyState === 3) {
+             initMultiplayer(this);
+        }
     }
 
     sendState() {
@@ -559,13 +805,14 @@ class Connect5 {
         if (!text) return;
         
         const role = this.currentPlayer === 1 ? "p1" : "p2"; 
-        this.addChatMessage(text, role);
+        this.addChatMessage(text, role); // Add locally
         this.chatInput.value = "";
 
         if (multiplayerEnabled && socket?.readyState === 1) {
             socket.send(JSON.stringify({
                 type: "chat",
                 room: currentRoom,
+                sender: clientId, // Include sender ID
                 msg: text,
                 role: role
             }));
@@ -665,6 +912,7 @@ class Connect5 {
     uiToggleBoost() {
         if (this.boosters[this.currentPlayer] <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
         if (this.nukes[this.currentPlayer] <= 0) { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
+        
         this.uiBoostActive = !this.uiBoostActive;
         if (!this.uiTargetingMode) this.uiTargetingMode = true; 
         this.updateUI();
@@ -717,6 +965,8 @@ class Connect5 {
         this.logSystemMessage(boosted ? "BOOSTED NUKE LAUNCHED" : "NUKE LAUNCHED");
         document.querySelector('.board-container').classList.add('impact');
         
+        // --- SYNCHRONOUS LOGIC START ---
+        // Immediate state update to prevent desync
         affected.forEach(pos => {
             const s = this.grid[pos.r][pos.c];
             const isBunker = (s >= 5 && s <= 8);
@@ -724,20 +974,31 @@ class Connect5 {
                 const owner = this.getPlayerId(s);
                 if (isBunker && owner > 0) this.bunkers[owner]--;
                 this.grid[pos.r][pos.c] = STATE.CRATER;
+                
+                // Add visual explosion manually so it exists before re-render
+                const cell = this.getCell(pos.r, pos.c);
+                cell.className = 'cell crater exploding';
             }
         });
 
         this.nukes[this.currentPlayer]--;
         if (boosted) this.boosters[this.currentPlayer]--;
         
+        // Switch turn synchronously so sent state is correct
+        this.bonusTurn = false; // Nuke ends bonus turn
+        this.switchTurn();
+        // --- SYNCHRONOUS LOGIC END ---
+
         this.uiTargetingMode = false;
         this.uiBoostActive = false;
-        this.bonusTurn = false;
         
+        // Visual Cleanup (doesn't affect logic state)
         setTimeout(() => {
             document.querySelector('.board-container').classList.remove('impact');
-            this.renderBoard();
-            this.switchTurn();
+            affected.forEach(pos => {
+                const cell = this.getCell(pos.r, pos.c);
+                cell.classList.remove('exploding');
+            });
         }, 350);
     }
 
@@ -969,7 +1230,6 @@ class Connect5 {
         if (s === STATE.CRATER) { cell.classList.add('crater'); return; }
         if (s === STATE.EMPTY) {
             if (this.bonusTurn && !this.ignoreIsolation) {
-                // If cell is empty but NOT isolated, it's invalid for bonus
                 if (!this.isIsolated(r, c)) cell.classList.add('invalid-isolation');
             }
             if (this.uiTargetingMode && !this.uiBoostActive) cell.classList.add('invalid-target');
@@ -984,11 +1244,6 @@ class Connect5 {
         if ([5,6,7,8].includes(s)) p.classList.add('bunker');
         if (this.lastMove?.r === r && this.lastMove?.c === c) p.classList.add('last-move');
         cell.appendChild(p);
-        
-        // Also highlight occupied cells during restricted bonus turn
-        if (this.bonusTurn && !this.ignoreIsolation) {
-             cell.classList.add('invalid-isolation');
-        }
 
         if (this.uiTargetingMode && !this.uiBoostActive && owner !== this.currentPlayer) {
             cell.classList.add('invalid-target');
@@ -1022,7 +1277,7 @@ class Connect5 {
 
         const iso = this.isoIndicator;
         if (this.bonusTurn) {
-            iso.textContent = this.ignoreIsolation ? "ISOLATION: IMPOSSIBLE; PLACE FREELY" : "ISOLATION: REQUIRED";
+            iso.textContent = this.ignoreIsolation ? "ISO: IMPOSSIBLE; PLACE FREELY" : "ISO: REQUIRED";
             iso.style.color = "var(--text-boost)";
             iso.classList.toggle('available', this.bonusTurn && !this.ignoreIsolation);
         } else {
