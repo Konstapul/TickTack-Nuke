@@ -92,7 +92,7 @@
             color: #889;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
         
         .side-panel h3 {
@@ -132,7 +132,7 @@
             flex: 1; background: transparent; border: none; color: #fff;
             padding: 5px; font-family: inherit; font-size: 0.7rem; outline: none;
         }
-        .chat-btn { border: none; border-left: 1px solid #334; width: 40px; color: var(--text-main); }
+        .chat-btn { border: none; border-left: 1px solid #334; width: 40px; color: var(--text-main); cursor: pointer; }
 
         /* Room ID Input */
         .room-controls { display: flex; gap: 5px; margin-bottom: 10px; align-items: center; }
@@ -147,6 +147,8 @@
             background: rgba(0,0,0,0.5);
             padding: 4px;
             border: 1px solid #334;
+            justify-content: center;
+            margin: 0 auto;
         }
         .mini-cell {
             width: 10px;
@@ -314,6 +316,13 @@
             box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.4);
         }
 
+        /* Blast Preview Style */
+        .cell.blast-preview {
+            box-shadow: inset 0 0 15px rgba(217, 70, 239, 0.6);
+            background: rgba(217, 70, 239, 0.15);
+            border: 1px solid rgba(217, 70, 239, 0.4);
+        }
+
         .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
         .board.targeting .cell.invalid-target:hover { background: rgba(255, 0, 0, 0.2); box-shadow: inset 0 0 10px red; cursor: not-allowed; }
         
@@ -363,22 +372,13 @@
             box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor;
             z-index: 5;
         }
-        
         .piece.bunker.scored {
             background: transparent !important;
             box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor;
         }
-        
-        .piece.bunker.forming {
-            animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes bunker-lock {
-            0% { transform: scale(1.2); opacity: 0.5; }
-            50% { transform: scale(0.8); }
-            100% { transform: scale(1); opacity: 1; }
-        }
+        .piece.bunker.forming { animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes bunker-lock { 0% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(0.8); } 100% { transform: scale(1); opacity: 1; } }
 
-        /* --- Controls --- */
         .controls-area {
             width: 100%; margin-top: 15px;
             display: grid; grid-template-columns: 2fr 1fr; gap: 15px;
@@ -409,7 +409,6 @@
 
         .btn-system { border-color: #1a3c5a; }
 
-        /* --- Overlay --- */
         .overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.9); z-index: 100;
@@ -447,13 +446,11 @@
                 <div id="conn-dot" class="status-dot disconnected"></div>
                 <span id="conn-text">OFFLINE</span>
             </div>
-            <span>V.7.0 [MP_LIVE]</span>
+            <span>V.8.2 [PREVIEW]</span>
         </div>
     </h1>
 
     <div class="game-wrapper">
-        
-        <!-- Left Tutorial: Patterns -->
         <div class="side-panel">
             <h3>PATTERNS</h3>
             <div class="tut-item">
@@ -523,6 +520,9 @@
                         <button id="btn-nuke" class="btn-nuke" onclick="game.uiToggleNuke()">LAUNCH ICBM</button>
                         <button id="btn-boost" class="btn-boost" onclick="game.uiToggleBoost()">ENGAGE BOOSTER</button>
                     </div>
+                    <div style="margin-top: 5px;">
+                         <button id="btn-craft" class="btn-boost" onclick="game.craftNuke()">CRAFT (3⚡→1☢)</button>
+                    </div>
                 </div>
                 <div class="panel">
                     <h3>SYSTEM</h3>
@@ -536,7 +536,6 @@
             </div>
         </div>
 
-        <!-- Right Tutorial: Rules & Ordnance & Chat -->
         <div class="side-panel">
             <h3>RULES</h3>
             <div class="tut-item">
@@ -559,7 +558,7 @@
             </div>
             <div class="tut-item">
                 <span class="tut-label">BOOSTED NUKE</span>
-                <div class="tut-desc">Radius 2 (Diamond).<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
+                <div class="tut-desc">Radius = 1 + Boosters used.<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
             </div>
 
             <h3>COMMUNICATIONS</h3>
@@ -591,6 +590,7 @@
 <div class="overlay" id="settings-overlay">
     <div class="modal">
         <h2>SYSTEM SETTINGS</h2>
+        
         <div class="setting-row">
             <span class="setting-label">MAP SIZE (RESETS GAME)</span>
             <div class="btn-group">
@@ -599,21 +599,26 @@
                 <button onclick="game.setMapSize(19)">19x19 (GLOBAL)</button>
             </div>
         </div>
+
         <div class="setting-row">
             <span class="setting-label">UI SCALE</span>
             <input type="range" min="0.7" max="1.3" step="0.1" value="1" oninput="game.setScale(this.value)">
         </div>
+
         <button class="btn-system" onclick="document.getElementById('settings-overlay').classList.remove('visible')">CLOSE</button>
     </div>
 </div>
+
 <div id="toast" class="toast"></div>
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v7.0
- * Fix: Double Chat Messages (Filter by Sender ID).
- * Fix: Nuke Turn Logic (Synchronous execution, visual-only timeout).
- * Fix: Bunker Animation (Ignore own echo to preserve local state).
+ * CONNECT 5: WAR ROOM v8.2
+ * - Stackable Boosters (+1 Radius per booster)
+ * - Craft Nuke (3 Boosters -> 1 Nuke)
+ * - Blast Radius Preview on Hover
+ * - Unique Crafting Sound
+ * - Multiplayer-Safe Crafting Logic
  */
 
 class SoundSystem {
@@ -634,6 +639,7 @@ class SoundSystem {
         const g = this.ctx.createGain(); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
         s.connect(g); g.connect(this.ctx.destination); s.start();
     }
+    
     playPlaceP1() { this.playTone(600, 'sine', 0.1); } 
     playPlaceP2() { this.playTone(400, 'sine', 0.12); } 
     playBonus() { this.playTone(800, 'square', 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2), 100); }
@@ -641,6 +647,11 @@ class SoundSystem {
     playNuke() { this.playNoise(0.5); }
     playBunker() { this.playTone(150, 'square', 0.4, 0.2); }
     playError() { this.playTone(150, 'sawtooth', 0.2); }
+    playCraft() { 
+        this.playTone(300, 'square', 0.1, 0.1); 
+        setTimeout(() => this.playTone(450, 'square', 0.1, 0.1), 100);
+        setTimeout(() => this.playTone(600, 'square', 0.2, 0.1), 200);
+    }
 }
 
 const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5, P2_BUNKER: 6, P1_BUNKER_SCORED: 7, P2_BUNKER_SCORED: 8, CRATER: 9 };
@@ -690,12 +701,10 @@ function initMultiplayer(gameInstance) {
                     if (data.room !== currentRoom) return;
 
                     if (data.type === "state") {
-                        // Prevent echo from wiping local state/animations
                         if (data.sender !== clientId) {
                             gameInstance.setState(data.state);
                         }
                     } else if (data.type === "chat") {
-                        // Filter out own messages to prevent double posting
                         if (data.sender !== clientId) {
                             gameInstance.addChatMessage(data.msg, data.role);
                         }
@@ -753,7 +762,7 @@ class Connect5 {
         this.gameActive = true;
 
         this.uiTargetingMode = false;
-        this.uiBoostActive = false;
+        this.activeBoosters = 0; // NEW: Tracks how many boosters are stacked
 
         this.boardElement = document.getElementById('board');
         this.appRoot = document.getElementById('app-root');
@@ -805,14 +814,14 @@ class Connect5 {
         if (!text) return;
         
         const role = this.currentPlayer === 1 ? "p1" : "p2"; 
-        this.addChatMessage(text, role); // Add locally
+        this.addChatMessage(text, role);
         this.chatInput.value = "";
 
         if (multiplayerEnabled && socket?.readyState === 1) {
             socket.send(JSON.stringify({
                 type: "chat",
                 room: currentRoom,
-                sender: clientId, // Include sender ID
+                sender: clientId,
                 msg: text,
                 role: role
             }));
@@ -887,7 +896,9 @@ class Connect5 {
         if (move.type === 'place') {
             this.internalExecutePlace(move.r, move.c);
         } else if (move.type === 'nuke') {
-            this.internalExecuteNuke(move.r, move.c, move.boosted);
+            this.internalExecuteNuke(move.r, move.c, move.boostCount);
+        } else if (move.type === 'craft') {
+            this.internalExecuteCraft();
         }
 
         this.updateUI();
@@ -896,26 +907,72 @@ class Connect5 {
 
     handleCellClick(r, c) {
         if (this.uiTargetingMode) {
-            this.applyMove({ type: 'nuke', r, c, boosted: this.uiBoostActive });
+            this.applyMove({ type: 'nuke', r, c, boostCount: this.activeBoosters });
         } else {
             this.applyMove({ type: 'place', r, c });
         }
     }
+    
+    // New: Handle hover for preview
+    handleCellHover(r, c) {
+        this.clearPreview();
+        if (this.uiTargetingMode) {
+            const cells = this.getBlastCells(r, c, this.activeBoosters);
+            cells.forEach(pos => {
+                const cell = this.getCell(pos.r, pos.c);
+                if (cell) cell.classList.add('blast-preview');
+            });
+        }
+    }
+    
+    clearPreview() {
+        const cells = this.boardElement.querySelectorAll('.blast-preview');
+        cells.forEach(c => c.classList.remove('blast-preview'));
+    }
 
     uiToggleNuke() {
-        if (this.nukes[this.currentPlayer] <= 0) { this.showToast("SILOS EMPTY"); this.sound.playError(); return; }
+        if (!this.uiTargetingMode && this.nukes[this.currentPlayer] <= 0) { 
+            this.showToast("SILOS EMPTY"); 
+            this.sound.playError(); 
+            return; 
+        }
         this.uiTargetingMode = !this.uiTargetingMode;
-        if (!this.uiTargetingMode) this.uiBoostActive = false;
+        if (!this.uiTargetingMode) {
+            this.activeBoosters = 0;
+            this.clearPreview();
+        }
         this.updateUI();
     }
 
     uiToggleBoost() {
-        if (this.boosters[this.currentPlayer] <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
-        if (this.nukes[this.currentPlayer] <= 0) { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
+        const p = this.currentPlayer;
+        const available = this.boosters[p];
+        if (available <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
         
-        this.uiBoostActive = !this.uiBoostActive;
-        if (!this.uiTargetingMode) this.uiTargetingMode = true; 
+        // Auto-enable Nuke mode if not active, check if possible
+        if (!this.uiTargetingMode) {
+             if (this.nukes[p] > 0) this.uiTargetingMode = true;
+             else { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
+        }
+        
+        // Cycle boosters: 0 -> 1 -> ... -> max -> 0
+        this.activeBoosters++;
+        if (this.activeBoosters > available) this.activeBoosters = 0;
+        
+        // Clear old preview if any
+        this.clearPreview();
         this.updateUI();
+    }
+    
+    craftNuke() {
+        const p = this.currentPlayer;
+        if (this.boosters[p] < 3) {
+            this.showToast("NEED 3 BOOSTERS");
+            this.sound.playError();
+            return;
+        }
+        // Send move to server
+        this.applyMove({ type: 'craft' });
     }
 
     internalExecutePlace(r, c) {
@@ -939,9 +996,26 @@ class Connect5 {
         this.resolvePostMove(r, c);
     }
 
-    internalExecuteNuke(r, c, boosted) {
+    // Helper to calculate blast cells based on center and boost count
+    getBlastCells(r, c, boostCount) {
+        const affected = [];
+        const radius = 1 + boostCount;
+        for (let dr = -radius; dr <= radius; dr++) {
+            for (let dc = -radius; dc <= radius; dc++) {
+                if (Math.abs(dr) + Math.abs(dc) <= radius && this.isValid(r+dr, c+dc)) {
+                    affected.push({ r: r+dr, c: c+dc });
+                }
+            }
+        }
+        return affected;
+    }
+
+    internalExecuteNuke(r, c, boostCount) {
+        // Validation check for server/peer safety
         if (this.nukes[this.currentPlayer] < 1) return;
-        if (boosted && this.boosters[this.currentPlayer] < 1) return;
+        if (boostCount > this.boosters[this.currentPlayer]) return;
+        
+        const boosted = boostCount > 0;
         
         if (!boosted) {
             if (this.getPlayerId(this.grid[r][c]) !== this.currentPlayer) {
@@ -950,23 +1024,14 @@ class Connect5 {
                 return;
             }
         }
-
-        const affected = [];
-        const radius = boosted ? 2 : 1;
-        for (let dr = -radius; dr <= radius; dr++) {
-            for (let dc = -radius; dc <= radius; dc++) {
-                if (Math.abs(dr) + Math.abs(dc) <= radius && this.isValid(r+dr, c+dc)) {
-                    affected.push({ r: r+dr, c: c+dc });
-                }
-            }
-        }
+        
+        const affected = this.getBlastCells(r, c, boostCount);
+        const radius = 1 + boostCount;
 
         this.sound.playNuke();
-        this.logSystemMessage(boosted ? "BOOSTED NUKE LAUNCHED" : "NUKE LAUNCHED");
+        this.logSystemMessage(boosted ? `BOOSTED NUKE (R${radius})` : "NUKE LAUNCHED");
         document.querySelector('.board-container').classList.add('impact');
         
-        // --- SYNCHRONOUS LOGIC START ---
-        // Immediate state update to prevent desync
         affected.forEach(pos => {
             const s = this.grid[pos.r][pos.c];
             const isBunker = (s >= 5 && s <= 8);
@@ -974,32 +1039,37 @@ class Connect5 {
                 const owner = this.getPlayerId(s);
                 if (isBunker && owner > 0) this.bunkers[owner]--;
                 this.grid[pos.r][pos.c] = STATE.CRATER;
-                
-                // Add visual explosion manually so it exists before re-render
                 const cell = this.getCell(pos.r, pos.c);
                 cell.className = 'cell crater exploding';
             }
         });
 
         this.nukes[this.currentPlayer]--;
-        if (boosted) this.boosters[this.currentPlayer]--;
+        this.boosters[this.currentPlayer] -= boostCount;
         
-        // Switch turn synchronously so sent state is correct
-        this.bonusTurn = false; // Nuke ends bonus turn
-        this.switchTurn();
-        // --- SYNCHRONOUS LOGIC END ---
-
         this.uiTargetingMode = false;
-        this.uiBoostActive = false;
+        this.activeBoosters = 0;
+        this.bonusTurn = false;
+        this.clearPreview();
         
-        // Visual Cleanup (doesn't affect logic state)
         setTimeout(() => {
             document.querySelector('.board-container').classList.remove('impact');
             affected.forEach(pos => {
                 const cell = this.getCell(pos.r, pos.c);
                 cell.classList.remove('exploding');
             });
+            this.switchTurn();
         }, 350);
+    }
+    
+    internalExecuteCraft() {
+        const p = this.currentPlayer;
+        if (this.boosters[p] >= 3) {
+            this.boosters[p] -= 3;
+            this.nukes[p] += 1;
+            this.sound.playCraft();
+            this.showToast("CRAFTED: 1 NUKE");
+        }
     }
 
     resolvePostMove(r, c) {
@@ -1069,7 +1139,7 @@ class Connect5 {
     switchTurn() {
         this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
         this.uiTargetingMode = false;
-        this.uiBoostActive = false;
+        this.activeBoosters = 0;
         this.checkIsolationAvailability();
         this.refreshGridVisuals();
         this.updateUI();
@@ -1207,6 +1277,9 @@ class Connect5 {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.onclick = () => this.handleCellClick(r, c);
+                // Mouse event listeners for preview
+                cell.onmouseenter = () => this.handleCellHover(r, c);
+                cell.onmouseleave = () => this.clearPreview();
                 this.boardElement.appendChild(cell);
                 this.updateCellVisual(r, c);
             }
@@ -1225,14 +1298,19 @@ class Connect5 {
         const cell = this.getCell(r, c);
         if (!cell) return;
         const s = this.grid[r][c];
+        
+        // Preserve preview if exists, but clear other classes
+        const hasPreview = cell.classList.contains('blast-preview');
         cell.className = 'cell';
+        if (hasPreview) cell.classList.add('blast-preview');
+        
         cell.innerHTML = '';
         if (s === STATE.CRATER) { cell.classList.add('crater'); return; }
         if (s === STATE.EMPTY) {
             if (this.bonusTurn && !this.ignoreIsolation) {
                 if (!this.isIsolated(r, c)) cell.classList.add('invalid-isolation');
             }
-            if (this.uiTargetingMode && !this.uiBoostActive) cell.classList.add('invalid-target');
+            if (this.uiTargetingMode && !this.activeBoosters) cell.classList.add('invalid-target');
             return;
         }
 
@@ -1245,7 +1323,7 @@ class Connect5 {
         if (this.lastMove?.r === r && this.lastMove?.c === c) p.classList.add('last-move');
         cell.appendChild(p);
 
-        if (this.uiTargetingMode && !this.uiBoostActive && owner !== this.currentPlayer) {
+        if (this.uiTargetingMode && !this.activeBoosters && owner !== this.currentPlayer) {
             cell.classList.add('invalid-target');
         }
     }
@@ -1268,7 +1346,7 @@ class Connect5 {
         let txt = p === 1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
         let statusClass = "status-text";
         if (this.bonusTurn) { txt = "BONUS TURN ACTIVE"; statusClass = "status-bonus"; }
-        else if (this.uiTargetingMode) { txt = this.uiBoostActive ? "TARGETING BOOSTED ICBM..." : "TARGETING STANDARD ICBM..."; statusClass = "status-bonus"; }
+        else if (this.uiTargetingMode) { txt = this.activeBoosters > 0 ? `TARGETING BOOSTED (+${this.activeBoosters})` : "TARGETING STANDARD ICBM..."; statusClass = "status-bonus"; }
         
         this.statusText.textContent = txt;
         this.statusText.className = statusClass;
@@ -1291,11 +1369,16 @@ class Connect5 {
 
         const bb = document.getElementById('btn-boost');
         bb.disabled = this.boosters[p] <= 0;
-        bb.classList.toggle('active', this.uiBoostActive);
+        // Button text shows currently active boosters or default label
+        bb.innerText = this.activeBoosters > 0 ? `BOOST (+${this.activeBoosters})` : "ENGAGE BOOSTER";
+        bb.classList.toggle('active', this.activeBoosters > 0);
+        
+        const bc = document.getElementById('btn-craft');
+        bc.disabled = this.boosters[p] < 3;
 
         if (this.boardElement) {
             this.boardElement.className = 'board';
-            if (this.uiTargetingMode) this.boardElement.classList.add(this.uiBoostActive ? 'targeting-boosted' : 'targeting');
+            if (this.uiTargetingMode) this.boardElement.classList.add(this.activeBoosters > 0 ? 'targeting-boosted' : 'targeting');
         }
     }
 
@@ -1324,7 +1407,7 @@ class Connect5 {
     resetRound() {
         this.scores = {1:0, 2:0}; this.nukes = {1:0, 2:0}; this.boosters = {1:0, 2:0}; this.bunkers = {1:0, 2:0};
         this.currentPlayer = 1; this.bonusTurn = false; this.lastMove = null; this.gameActive = true;
-        this.uiTargetingMode = false; this.uiBoostActive = false;
+        this.uiTargetingMode = false; this.activeBoosters = 0;
         this.createBoard(this.mapSize);
         this.updateUI();
         document.getElementById('overlay').classList.remove('visible');
