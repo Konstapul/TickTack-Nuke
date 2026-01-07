@@ -458,7 +458,7 @@
                 <div id="conn-dot" class="status-dot disconnected"></div>
                 <span id="conn-text">OFFLINE</span>
             </div>
-            <span>V.9.6 [PIPELINE_RESTORED]</span>
+            <span>V.9.7 [PROTOCOL_FIX]</span>
         </div>
     </h1>
 
@@ -633,11 +633,13 @@
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v9.6 [PIPELINE_RESTORED]
- * - Restored sendState() authoritative function.
- * - Refactored applyMove() to simple Pipeline: Mutate -> Finalize -> Send.
- * - Removed broken "simulation/revert" pattern in applyMove.
- * - Fixed TypeError causing scoreboard and nuke freeze.
+ * CONNECT 5: WAR ROOM v9.7 [PROTOCOL_FIX]
+ * - Aligned client protocol with server expectations.
+ * - Initial message type changed from 'join' to 'hello'.
+ * - Removed redundant 'ping' (server uses native ping).
+ * - Removed dead 'sendAction' code.
+ * - Added 'lastMover' to state for server turn validation.
+ * - Added role guard to prevent frozen UI before role assignment.
  */
 
 class SoundSystem {
@@ -702,15 +704,12 @@ function initMultiplayer(gameInstance) {
                 multiplayerEnabled = true;
                 updateConnStatus("ONLINE", "connected");
                 
+                // FIX 1: Send 'hello' instead of 'join' to avoid implicit join duplication
                 socket.send(JSON.stringify({
-                    type: "join",
-                    room: currentRoom,
-                    sender: clientId
+                    type: "hello",
+                    room: currentRoom
                 }));
-
-                setInterval(() => {
-                    if(socket.readyState === 1) socket.send(JSON.stringify({type:"ping"}));
-                }, 30000);
+                // FIX 2: Removed ping interval (server handles keepalive)
             };
 
             socket.onmessage = (event) => {
@@ -843,21 +842,13 @@ class Connect5 {
         currentRoom = roomName || "WAR-ROOM-1";
         this.logSystemMessage(`JOINED FREQUENCY: ${currentRoom}`);
         if (socket && socket.readyState === 1) {
-             socket.send(JSON.stringify({type:"join", room:currentRoom, sender:clientId}));
+             socket.send(JSON.stringify({type:"hello", room:currentRoom})); // FIX 1: Use 'hello'
         } else if (!socket || socket.readyState === 3) {
              initMultiplayer(this);
         }
     }
 
-    sendAction(actionPayload) {
-        if (this.gameMode === 'online' && socket?.readyState === 1) {
-            socket.send(JSON.stringify({
-                type: "action",
-                room: currentRoom,
-                action: actionPayload
-            }));
-        }
-    }
+    // FIX 3: Removed dead sendAction method
 
     sendChatFromInput() {
         const text = this.chatInput.value.trim();
@@ -995,6 +986,7 @@ class Connect5 {
         if (!this.gameActive) return;
 
         if (this.gameMode === 'online') {
+             if (this.myPlayerId === 0) return; // FIX 5: Role not assigned yet, ignore input to prevent freeze
              if (this.myPlayerId !== this.currentPlayer) {
                  this.showToast("WAIT FOR SIGNAL");
                  this.sound.playError();
@@ -1019,12 +1011,19 @@ class Connect5 {
 
     // --- NEW AUTHORITATIVE STATE FUNCTION ---
     sendState() {
+        const state = this.getState();
+        
+        // FIX 4: Attach lastMover for server validation
+        if (this.gameMode === 'online') {
+            state.lastMover = this.myPlayerId;
+        }
+
         // 1. Broadcast if online
         if (this.gameMode === 'online' && socket && socket.readyState === 1) {
             socket.send(JSON.stringify({
                 type: "state",
                 room: currentRoom,
-                state: this.getState()
+                state: state
             }));
         }
 
