@@ -204,6 +204,16 @@
             z-index: 10;
         }
         
+        .player-score.bonus-pulse {
+            animation: bonus-pulse 0.6s ease-out;
+        }
+        
+        @keyframes bonus-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 transparent; }
+            50% { transform: scale(1.08); box-shadow: 0 0 30px var(--text-boost); border-color: var(--text-boost); }
+            100% { transform: scale(1.02); }
+        }
+        
         .p1-panel { color: var(--p1-color); }
         .p2-panel { color: var(--p2-color); }
 
@@ -335,10 +345,12 @@
             width: 60%; height: 60%; border-radius: 50%;
             transition: all 0.2s; 
             box-sizing: border-box;
-            box-shadow: 0 0 8px currentColor;
+            /* Default shadow moved to specific classes */
         }
-        .piece.p1 { background-color: var(--p1-color); color: var(--p1-color); }
-        .piece.p2 { background-color: var(--p2-color); color: var(--p2-color); }
+        
+        /* CSS Variables for scoped color usage */
+        .piece.p1 { --pc: var(--p1-color); background-color: var(--pc); box-shadow: 0 0 8px var(--pc); }
+        .piece.p2 { --pc: var(--p2-color); background-color: var(--pc); box-shadow: 0 0 8px var(--pc); }
         
         .piece.placed { animation: ping 0.4s ease-out; }
         @keyframes ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 15px transparent; } }
@@ -350,11 +362,9 @@
 
         .piece.scored { 
             background-color: transparent !important;
-            box-shadow: 0 0 0 3px currentColor, 0 0 15px currentColor;
+            box-shadow: inset 0 0 0 3px var(--pc), 0 0 15px var(--pc) !important;
             width: 65%; height: 65%; 
         }
-        .piece.p1.scored { color: var(--scored-p1); }
-        .piece.p2.scored { color: var(--scored-p2); }
 
         .piece.square-flash {
             animation: flash-square 0.5s ease-out;
@@ -368,14 +378,16 @@
         .piece.bunker {
             border-radius: 10%; 
             width: 75%; height: 75%;
-            background: repeating-linear-gradient(45deg, currentColor, currentColor 2px, transparent 2px, transparent 4px);
-            box-shadow: 0 0 0 2px currentColor, 0 0 10px currentColor;
+            background: repeating-linear-gradient(45deg, var(--pc), var(--pc) 2px, transparent 2px, transparent 4px);
+            box-shadow: 0 0 0 2px var(--pc), 0 0 10px var(--pc);
             z-index: 5;
         }
         .piece.bunker.scored {
             background: transparent !important;
-            box-shadow: inset 0 0 0 3px currentColor, 0 0 10px currentColor;
+            box-shadow: inset 0 0 0 3px var(--pc), 0 0 10px var(--pc) !important;
+            border: none; /* use box-shadow for color control */
         }
+        
         .piece.bunker.forming { animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes bunker-lock { 0% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(0.8); } 100% { transform: scale(1); opacity: 1; } }
 
@@ -446,7 +458,7 @@
                 <div id="conn-dot" class="status-dot disconnected"></div>
                 <span id="conn-text">OFFLINE</span>
             </div>
-            <span>V.8.2 [PREVIEW]</span>
+            <span>V.9.6 [PIPELINE_RESTORED]</span>
         </div>
     </h1>
 
@@ -592,6 +604,14 @@
         <h2>SYSTEM SETTINGS</h2>
         
         <div class="setting-row">
+            <span class="setting-label">CONNECTION MODE</span>
+            <div class="btn-group">
+                <button onclick="game.setMode('hotseat')">HOTSEAT (LOCAL)</button>
+                <button onclick="game.setMode('online')">ONLINE (SERVER)</button>
+            </div>
+        </div>
+
+        <div class="setting-row">
             <span class="setting-label">MAP SIZE (RESETS GAME)</span>
             <div class="btn-group">
                 <button onclick="game.setMapSize(13)">13x13 (SKIRMISH)</button>
@@ -613,12 +633,11 @@
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v8.2
- * - Stackable Boosters (+1 Radius per booster)
- * - Craft Nuke (3 Boosters -> 1 Nuke)
- * - Blast Radius Preview on Hover
- * - Unique Crafting Sound
- * - Multiplayer-Safe Crafting Logic
+ * CONNECT 5: WAR ROOM v9.6 [PIPELINE_RESTORED]
+ * - Restored sendState() authoritative function.
+ * - Refactored applyMove() to simple Pipeline: Mutate -> Finalize -> Send.
+ * - Removed broken "simulation/revert" pattern in applyMove.
+ * - Fixed TypeError causing scoreboard and nuke freeze.
  */
 
 class SoundSystem {
@@ -639,7 +658,6 @@ class SoundSystem {
         const g = this.ctx.createGain(); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
         s.connect(g); g.connect(this.ctx.destination); s.start();
     }
-    
     playPlaceP1() { this.playTone(600, 'sine', 0.1); } 
     playPlaceP2() { this.playTone(400, 'sine', 0.12); } 
     playBonus() { this.playTone(800, 'square', 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2), 100); }
@@ -663,15 +681,15 @@ let multiplayerEnabled = false;
 let clientId = Math.random().toString(36).substr(2, 9);
 let currentRoom = "WAR-ROOM-" + Math.floor(1000 + Math.random() * 9000); 
 let retryCount = 0;
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 5;
 
 function initMultiplayer(gameInstance) {
     document.getElementById('room-input').value = currentRoom;
 
     const connect = () => {
         if (retryCount >= MAX_RETRIES) {
-            updateConnStatus("OFFLINE (LOCAL)", "disconnected");
-            gameInstance.showToast("MULTIPLAYER UNAVAILABLE. PLAYING LOCALLY.");
+            updateConnStatus("SERVER UNREACHABLE", "disconnected");
+            gameInstance.showToast("CONNECTION FAILED. TRY REFRESHING.");
             return;
         }
 
@@ -682,7 +700,7 @@ function initMultiplayer(gameInstance) {
                 console.log("Connected");
                 retryCount = 0;
                 multiplayerEnabled = true;
-                updateConnStatus("CONNECTED", "connected");
+                updateConnStatus("ONLINE", "connected");
                 
                 socket.send(JSON.stringify({
                     type: "join",
@@ -700,14 +718,17 @@ function initMultiplayer(gameInstance) {
                     const data = JSON.parse(event.data);
                     if (data.room !== currentRoom) return;
 
-                    if (data.type === "state") {
-                        if (data.sender !== clientId) {
-                            gameInstance.setState(data.state);
-                        }
-                    } else if (data.type === "chat") {
-                        if (data.sender !== clientId) {
-                            gameInstance.addChatMessage(data.msg, data.role);
-                        }
+                    if (data.type === "role") {
+                        gameInstance.setLocalRole(data.playerId);
+                    }
+                    else if (data.type === "state") {
+                        gameInstance.setState(data.state);
+                    } 
+                    else if (data.type === "chat") {
+                         gameInstance.addChatMessage(data.msg, data.role);
+                    }
+                    else if (data.type === "error") {
+                        gameInstance.showToast(data.msg);
                     }
                 } catch(e) { console.error("Bad message", e); }
             };
@@ -720,7 +741,7 @@ function initMultiplayer(gameInstance) {
                     retryCount++;
                     setTimeout(connect, 3000);
                 } else {
-                    updateConnStatus("OFFLINE (LOCAL)", "disconnected");
+                    updateConnStatus("DISCONNECTED", "disconnected");
                 }
             };
 
@@ -729,7 +750,7 @@ function initMultiplayer(gameInstance) {
             };
 
         } catch (e) {
-            updateConnStatus("OFFLINE (LOCAL)", "disconnected");
+            updateConnStatus("ERROR", "disconnected");
         }
     };
     connect();
@@ -750,6 +771,10 @@ class Connect5 {
         this.winningScore = 3;
         this.sound = new SoundSystem();
         
+        // Mode: 'hotseat' | 'online'
+        this.gameMode = 'hotseat'; 
+        this.myPlayerId = 0; 
+
         this.grid = [];
         this.currentPlayer = 1;
         this.scores = { 1: 0, 2: 0 };
@@ -760,9 +785,11 @@ class Connect5 {
         this.ignoreIsolation = false;
         this.lastMove = null;
         this.gameActive = true;
+        this.justEarnedBonus = false; 
 
         this.uiTargetingMode = false;
-        this.activeBoosters = 0; // NEW: Tracks how many boosters are stacked
+        this.activeBoosters = 0;
+        this.isSimulation = false; 
 
         this.boardElement = document.getElementById('board');
         this.appRoot = document.getElementById('app-root');
@@ -786,25 +813,48 @@ class Connect5 {
         document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
     }
 
+    setMode(mode) {
+        this.gameMode = mode;
+        this.resetRound();
+        document.getElementById('settings-overlay').classList.remove('visible');
+        
+        if (mode === 'online') {
+            this.myPlayerId = 0; 
+            if (!socket) initMultiplayer(this);
+            else this.joinRoom(currentRoom); 
+        } else {
+            this.myPlayerId = 0; 
+            if(socket) socket.close();
+            updateConnStatus("OFFLINE", "disconnected");
+            this.showToast("MODE: HOTSEAT");
+        }
+    }
+
+    setLocalRole(id) {
+        this.myPlayerId = id;
+        const roleName = id === 1 ? "COMMANDER A" : (id === 2 ? "COMMANDER B" : "SPECTATOR");
+        document.getElementById('player-role').textContent = "YOU ARE: " + roleName;
+        this.showToast("ROLE ASSIGNED: " + roleName);
+    }
+
     // --- NETWORKING ---
 
     joinRoom(roomName) {
         currentRoom = roomName || "WAR-ROOM-1";
         this.logSystemMessage(`JOINED FREQUENCY: ${currentRoom}`);
         if (socket && socket.readyState === 1) {
-             socket.close(); 
+             socket.send(JSON.stringify({type:"join", room:currentRoom, sender:clientId}));
         } else if (!socket || socket.readyState === 3) {
              initMultiplayer(this);
         }
     }
 
-    sendState() {
-        if (multiplayerEnabled && socket?.readyState === 1) {
+    sendAction(actionPayload) {
+        if (this.gameMode === 'online' && socket?.readyState === 1) {
             socket.send(JSON.stringify({
-                type: "state",
+                type: "action",
                 room: currentRoom,
-                sender: clientId,
-                state: this.getState()
+                action: actionPayload
             }));
         }
     }
@@ -813,11 +863,12 @@ class Connect5 {
         const text = this.chatInput.value.trim();
         if (!text) return;
         
-        const role = this.currentPlayer === 1 ? "p1" : "p2"; 
+        const role = this.gameMode === 'hotseat' ? (this.currentPlayer===1?'p1':'p2') : (this.myPlayerId === 1 ? 'p1' : (this.myPlayerId===2 ? 'p2' : 'system'));
+        
         this.addChatMessage(text, role);
         this.chatInput.value = "";
 
-        if (multiplayerEnabled && socket?.readyState === 1) {
+        if (this.gameMode === 'online' && socket?.readyState === 1) {
             socket.send(JSON.stringify({
                 type: "chat",
                 room: currentRoom,
@@ -841,6 +892,8 @@ class Connect5 {
         this.addChatMessage(text, "system");
     }
 
+    // --- STATE MANAGEMENT ---
+
     getState() {
         return {
             grid: JSON.parse(JSON.stringify(this.grid)),
@@ -853,12 +906,18 @@ class Connect5 {
             ignoreIsolation: this.ignoreIsolation,
             lastMove: this.lastMove ? { ...this.lastMove } : null,
             gameActive: this.gameActive,
-            mapSize: this.mapSize
+            mapSize: this.mapSize,
+            justEarnedBonus: this.justEarnedBonus
         };
     }
 
     setState(state) {
-        this.detectStateChange(state);
+        if (this.gameMode === 'online' && !this.isSimulation) {
+            this.detectStateChange(state);
+        }
+        
+        const oldGrid = this.grid;
+        
         this.grid = state.grid;
         this.currentPlayer = state.currentPlayer;
         this.scores = state.scores;
@@ -869,9 +928,46 @@ class Connect5 {
         this.ignoreIsolation = state.ignoreIsolation;
         this.lastMove = state.lastMove;
         this.gameActive = state.gameActive;
-        this.mapSize = state.mapSize;
+        this.justEarnedBonus = state.justEarnedBonus;
+        
+        // Handle 2x2 Animation from Server
+        if (this.justEarnedBonus) {
+             const square = this.checkForSquare(this.lastMove.r, this.lastMove.c); // Last move triggered it? Or scan board?
+             // Since we have grid, let's scan all squares for "active" ones?
+             // Easier: assume it relates to lastMove for now or just play sound.
+             // Full fix: scan board for squares and apply class
+             for(let r=0; r<this.mapSize; r++) {
+                 for(let c=0; c<this.mapSize; c++) {
+                     // Check if this cell is part of a square
+                     // (Simplified visual fix: rely on lastMove for visual anchor or just sound)
+                 }
+             }
+        }
+        
+        if (state.mapSize !== this.mapSize) {
+            this.mapSize = state.mapSize;
+            this.createBoard(this.mapSize); 
+        } else {
+             for(let r=0; r<this.mapSize; r++) {
+                for(let c=0; c<this.mapSize; c++) {
+                    const newVal = this.grid[r][c];
+                    const oldVal = oldGrid[r] ? oldGrid[r][c] : null;
+                    const isLast = this.lastMove && this.lastMove.r === r && this.lastMove.c === c;
+                    
+                    if (newVal !== oldVal || isLast) {
+                        this.updateCellVisual(r, c);
+                    }
+                    
+                    // Apply flash if needed (brute force check on recent squares)
+                    // If justEarnedBonus is true, we might want to re-flash the square
+                    if (this.justEarnedBonus) {
+                        // This logic could be improved by passing specific square coords in state
+                        // For now, sound + UI pulse handles feedback
+                    }
+                }
+            }
+        }
 
-        this.renderBoard();
         this.updateUI();
         if (!this.gameActive) this.showEndScreen();
     }
@@ -888,10 +984,26 @@ class Connect5 {
              if (owner === 1) this.sound.playPlaceP1();
              else if (owner === 2) this.sound.playPlaceP2();
         }
+        if (newState.justEarnedBonus) {
+            this.sound.playBonus();
+        }
     }
+
+    // --- CORE LOGIC HANDLER ---
 
     applyMove(move) {
         if (!this.gameActive) return;
+
+        if (this.gameMode === 'online') {
+             if (this.myPlayerId !== this.currentPlayer) {
+                 this.showToast("WAIT FOR SIGNAL");
+                 this.sound.playError();
+                 return;
+             }
+        }
+
+        // --- NEW PIPELINE: MUTATE -> FINALIZE -> SEND ---
+        this.isSimulation = false; // We commit to moves locally
 
         if (move.type === 'place') {
             this.internalExecutePlace(move.r, move.c);
@@ -900,9 +1012,27 @@ class Connect5 {
         } else if (move.type === 'craft') {
             this.internalExecuteCraft();
         }
+        
+        // Finalize state and propagate
+        this.sendState();
+    }
 
+    // --- NEW AUTHORITATIVE STATE FUNCTION ---
+    sendState() {
+        // 1. Broadcast if online
+        if (this.gameMode === 'online' && socket && socket.readyState === 1) {
+            socket.send(JSON.stringify({
+                type: "state",
+                room: currentRoom,
+                state: this.getState()
+            }));
+        }
+
+        // 2. Update UI
         this.updateUI();
-        this.sendState(); 
+
+        // 3. Persist
+        this.autoSave();
     }
 
     handleCellClick(r, c) {
@@ -913,7 +1043,6 @@ class Connect5 {
         }
     }
     
-    // New: Handle hover for preview
     handleCellHover(r, c) {
         this.clearPreview();
         if (this.uiTargetingMode) {
@@ -931,6 +1060,8 @@ class Connect5 {
     }
 
     uiToggleNuke() {
+        if (this.gameMode === 'online' && this.currentPlayer !== this.myPlayerId) return;
+        
         if (!this.uiTargetingMode && this.nukes[this.currentPlayer] <= 0) { 
             this.showToast("SILOS EMPTY"); 
             this.sound.playError(); 
@@ -945,21 +1076,20 @@ class Connect5 {
     }
 
     uiToggleBoost() {
+        if (this.gameMode === 'online' && this.currentPlayer !== this.myPlayerId) return;
+        
         const p = this.currentPlayer;
         const available = this.boosters[p];
         if (available <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
         
-        // Auto-enable Nuke mode if not active, check if possible
         if (!this.uiTargetingMode) {
              if (this.nukes[p] > 0) this.uiTargetingMode = true;
              else { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
         }
         
-        // Cycle boosters: 0 -> 1 -> ... -> max -> 0
         this.activeBoosters++;
         if (this.activeBoosters > available) this.activeBoosters = 0;
         
-        // Clear old preview if any
         this.clearPreview();
         this.updateUI();
     }
@@ -971,15 +1101,16 @@ class Connect5 {
             this.sound.playError();
             return;
         }
-        // Send move to server
         this.applyMove({ type: 'craft' });
     }
 
+    // --- LOGIC INTERNALS ---
+
     internalExecutePlace(r, c) {
-        if (this.grid[r][c] !== STATE.EMPTY) { this.sound.playError(); return; }
+        if (this.grid[r][c] !== STATE.EMPTY) { if(!this.isSimulation) this.sound.playError(); return; }
         if (this.bonusTurn && !this.ignoreIsolation && !this.isIsolated(r, c)) {
-            this.showToast("BONUS PIECE MUST BE ISOLATED");
-            this.sound.playError();
+            if(!this.isSimulation) this.showToast("BONUS PIECE MUST BE ISOLATED");
+            if(!this.isSimulation) this.sound.playError();
             return;
         }
 
@@ -987,16 +1118,16 @@ class Connect5 {
         this.grid[r][c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
         this.lastMove = { r, c };
         
-        if (this.currentPlayer === 1) this.sound.playPlaceP1();
-        else this.sound.playPlaceP2();
-        
-        this.updateCellVisual(r, c);
-        if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c);
+        if (!this.isSimulation) {
+            if (this.currentPlayer === 1) this.sound.playPlaceP1();
+            else this.sound.playPlaceP2();
+            this.updateCellVisual(r, c); 
+            if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c); // Update old
+        }
 
         this.resolvePostMove(r, c);
     }
 
-    // Helper to calculate blast cells based on center and boost count
     getBlastCells(r, c, boostCount) {
         const affected = [];
         const radius = 1 + boostCount;
@@ -1011,26 +1142,26 @@ class Connect5 {
     }
 
     internalExecuteNuke(r, c, boostCount) {
-        // Validation check for server/peer safety
         if (this.nukes[this.currentPlayer] < 1) return;
-        if (boostCount > this.boosters[this.currentPlayer]) return;
         
         const boosted = boostCount > 0;
         
         if (!boosted) {
-            if (this.getPlayerId(this.grid[r][c]) !== this.currentPlayer) {
-                this.showToast("INVALID TARGET: ALLIED UNIT REQUIRED");
-                this.sound.playError();
+            const targetState = this.grid[r][c];
+            if (this.getPlayerId(targetState) !== this.currentPlayer) {
+                if(!this.isSimulation) { this.showToast("INVALID TARGET"); this.sound.playError(); }
                 return;
             }
         }
         
         const affected = this.getBlastCells(r, c, boostCount);
-        const radius = 1 + boostCount;
 
-        this.sound.playNuke();
-        this.logSystemMessage(boosted ? `BOOSTED NUKE (R${radius})` : "NUKE LAUNCHED");
-        document.querySelector('.board-container').classList.add('impact');
+        if (!this.isSimulation) {
+            this.sound.playNuke();
+            this.logSystemMessage(boosted ? "BOOSTED NUKE LAUNCHED" : "NUKE LAUNCHED");
+            document.querySelector('.board-container').classList.add('impact');
+            setTimeout(() => document.querySelector('.board-container').classList.remove('impact'), 400);
+        }
         
         affected.forEach(pos => {
             const s = this.grid[pos.r][pos.c];
@@ -1039,8 +1170,6 @@ class Connect5 {
                 const owner = this.getPlayerId(s);
                 if (isBunker && owner > 0) this.bunkers[owner]--;
                 this.grid[pos.r][pos.c] = STATE.CRATER;
-                const cell = this.getCell(pos.r, pos.c);
-                cell.className = 'cell crater exploding';
             }
         });
 
@@ -1052,14 +1181,9 @@ class Connect5 {
         this.bonusTurn = false;
         this.clearPreview();
         
-        setTimeout(() => {
-            document.querySelector('.board-container').classList.remove('impact');
-            affected.forEach(pos => {
-                const cell = this.getCell(pos.r, pos.c);
-                cell.classList.remove('exploding');
-            });
-            this.switchTurn();
-        }, 350);
+        if (!this.isSimulation) this.renderBoard();
+
+        this.switchTurn();
     }
     
     internalExecuteCraft() {
@@ -1067,8 +1191,10 @@ class Connect5 {
         if (this.boosters[p] >= 3) {
             this.boosters[p] -= 3;
             this.nukes[p] += 1;
-            this.sound.playCraft();
-            this.showToast("CRAFTED: 1 NUKE");
+            if(!this.isSimulation) {
+                this.sound.playCraft();
+                this.showToast("CRAFTED: 1 NUKE");
+            }
         }
     }
 
@@ -1080,7 +1206,7 @@ class Connect5 {
         if (scored) {
             this.bonusTurn = false;
             this.ignoreIsolation = false;
-            this.sound.playScore();
+            if(!this.isSimulation) this.sound.playScore();
             if (this.scores[player] >= this.winningScore) { this.endRound("SCORE"); return; }
             this.switchTurn();
             return;
@@ -1092,17 +1218,20 @@ class Connect5 {
         const plus = this.checkForPlus(r, c);
         if (plus) {
             this.boosters[player]++;
-            this.sound.playBunker();
+            if(!this.isSimulation) this.sound.playBunker();
             plus.forEach(pos => {
                 const s = this.grid[pos.r][pos.c];
                 const wasBunker = (s >= 5 && s <= 8);
                 if (!wasBunker) this.bunkers[player]++;
                 const scored = (s === 3 || s === 4 || s === 7 || s === 8);
                 this.grid[pos.r][pos.c] = player === 1 ? (scored ? 7 : 5) : (scored ? 8 : 6);
-                this.updateCellVisual(pos.r, pos.c);
-                const cell = this.getCell(pos.r, pos.c);
-                const piece = cell.querySelector('.piece');
-                if (piece) piece.classList.add('forming');
+                
+                if(!this.isSimulation) {
+                    this.updateCellVisual(pos.r, pos.c);
+                    const cell = this.getCell(pos.r, pos.c);
+                    const piece = cell.querySelector('.piece');
+                    if (piece) piece.classList.add('forming');
+                }
             });
             triggers.push("BUNKERS ESTABLISHED");
         }
@@ -1111,25 +1240,33 @@ class Connect5 {
             const square = this.checkForSquare(r, c);
             if (square) {
                 earnedBonus = true;
-                this.sound.playBonus();
-                square.forEach(pos => this.getCell(pos.r, pos.c).querySelector('.piece')?.classList.add('square-flash'));
+                this.justEarnedBonus = true; // Set Flag
+                if(!this.isSimulation) {
+                    this.sound.playBonus();
+                    square.forEach(pos => {
+                         const cell = this.getCell(pos.r, pos.c);
+                         const piece = cell.querySelector('.piece');
+                         if (piece) piece.classList.add('square-flash');
+                    });
+                }
                 triggers.push("BONUS TURN");
             }
         }
 
-        if (triggers.length) this.showToast(triggers.join(" + "));
+        if (triggers.length && !this.isSimulation) this.showToast(triggers.join(" + "));
 
         if (earnedBonus) {
             this.bonusTurn = true;
             this.checkIsolationAvailability(); 
-            this.refreshGridVisuals(); 
+            this.refreshGridVisuals(); // ADDED
+            // this.updateUI(); // Removed from here, handled in applyMove
             return;
         } 
         
         if (this.bonusTurn) {
             this.bonusTurn = false;
             this.ignoreIsolation = false;
-            this.refreshGridVisuals();
+            this.refreshGridVisuals(); // ADDED
             this.switchTurn();
         } else {
             this.switchTurn();
@@ -1141,9 +1278,9 @@ class Connect5 {
         this.uiTargetingMode = false;
         this.activeBoosters = 0;
         this.checkIsolationAvailability();
-        this.refreshGridVisuals();
-        this.updateUI();
     }
+
+    // --- HELPERS ---
 
     getPlayerId(s) {
         if ([1,3,5,7].includes(s)) return 1;
@@ -1152,7 +1289,6 @@ class Connect5 {
     }
     
     isActivePiece(s) { return (s === 1 || s === 2 || s === 5 || s === 6); }
-
     isValid(r, c) { return r >= 0 && r < this.mapSize && c >= 0 && c < this.mapSize; }
 
     isIsolated(r, c) {
@@ -1277,7 +1413,6 @@ class Connect5 {
                 const cell = document.createElement('div');
                 cell.className = 'cell';
                 cell.onclick = () => this.handleCellClick(r, c);
-                // Mouse event listeners for preview
                 cell.onmouseenter = () => this.handleCellHover(r, c);
                 cell.onmouseleave = () => this.clearPreview();
                 this.boardElement.appendChild(cell);
@@ -1299,14 +1434,20 @@ class Connect5 {
         if (!cell) return;
         const s = this.grid[r][c];
         
-        // Preserve preview if exists, but clear other classes
         const hasPreview = cell.classList.contains('blast-preview');
         cell.className = 'cell';
         if (hasPreview) cell.classList.add('blast-preview');
-        
+
         cell.innerHTML = '';
-        if (s === STATE.CRATER) { cell.classList.add('crater'); return; }
+        
+        if (s === STATE.CRATER) { 
+            cell.classList.add('crater'); 
+            return; 
+        }
+        
         if (s === STATE.EMPTY) {
+            // Apply invalid highlight if bonus turn requires isolation and this cell fails
+            // OR if cell is occupied (since this function now handles the red background logic for ALL cells)
             if (this.bonusTurn && !this.ignoreIsolation) {
                 if (!this.isIsolated(r, c)) cell.classList.add('invalid-isolation');
             }
@@ -1322,6 +1463,11 @@ class Connect5 {
         if ([5,6,7,8].includes(s)) p.classList.add('bunker');
         if (this.lastMove?.r === r && this.lastMove?.c === c) p.classList.add('last-move');
         cell.appendChild(p);
+        
+        // Also highlight occupied cells during restricted bonus turn
+        if (this.bonusTurn && !this.ignoreIsolation) {
+             cell.classList.add('invalid-isolation');
+        }
 
         if (this.uiTargetingMode && !this.activeBoosters && owner !== this.currentPlayer) {
             cell.classList.add('invalid-target');
@@ -1334,6 +1480,18 @@ class Connect5 {
         const p = this.currentPlayer;
         document.getElementById('p1-panel').classList.toggle('active-turn', p === 1);
         document.getElementById('p2-panel').classList.toggle('active-turn', p === 2);
+        
+        // Remove old pulse classes
+        document.getElementById('p1-panel').classList.remove('bonus-pulse');
+        document.getElementById('p2-panel').classList.remove('bonus-pulse');
+        
+        if (this.justEarnedBonus) {
+            const panel = document.getElementById(p === 1 ? 'p1-panel' : 'p2-panel');
+            void panel.offsetWidth; // Force Reflow Hack
+            panel.classList.add('bonus-pulse');
+            this.justEarnedBonus = false; 
+        }
+
         document.getElementById('score1').textContent = this.scores[1];
         document.getElementById('score2').textContent = this.scores[2];
         document.getElementById('nuke1').textContent = this.nukes[1];
@@ -1343,7 +1501,13 @@ class Connect5 {
         document.getElementById('bunker1').textContent = this.bunkers[1];
         document.getElementById('bunker2').textContent = this.bunkers[2];
 
-        let txt = p === 1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
+        let txt = "";
+        if (this.gameMode === 'online') {
+            txt = (p === this.myPlayerId) ? "YOUR TURN" : "ENEMY TURN";
+        } else {
+            txt = p === 1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
+        }
+
         let statusClass = "status-text";
         if (this.bonusTurn) { txt = "BONUS TURN ACTIVE"; statusClass = "status-bonus"; }
         else if (this.uiTargetingMode) { txt = this.activeBoosters > 0 ? `TARGETING BOOSTED (+${this.activeBoosters})` : "TARGETING STANDARD ICBM..."; statusClass = "status-bonus"; }
@@ -1363,23 +1527,26 @@ class Connect5 {
         }
 
         const bn = document.getElementById('btn-nuke');
-        bn.disabled = this.nukes[p] <= 0;
+        bn.disabled = this.nukes[p] <= 0 || (this.gameMode==='online' && this.myPlayerId !== p);
         bn.innerText = this.uiTargetingMode ? "CANCEL" : "LAUNCH ICBM";
         bn.classList.toggle('active', this.uiTargetingMode);
 
         const bb = document.getElementById('btn-boost');
-        bb.disabled = this.boosters[p] <= 0;
-        // Button text shows currently active boosters or default label
+        bb.disabled = this.boosters[p] <= 0 || (this.gameMode==='online' && this.myPlayerId !== p);
         bb.innerText = this.activeBoosters > 0 ? `BOOST (+${this.activeBoosters})` : "ENGAGE BOOSTER";
         bb.classList.toggle('active', this.activeBoosters > 0);
         
         const bc = document.getElementById('btn-craft');
-        bc.disabled = this.boosters[p] < 3;
+        bc.disabled = this.boosters[p] < 3 || (this.gameMode==='online' && this.myPlayerId !== p);
 
-        if (this.boardElement) {
-            this.boardElement.className = 'board';
-            if (this.uiTargetingMode) this.boardElement.classList.add(this.activeBoosters > 0 ? 'targeting-boosted' : 'targeting');
+        if (this.gameMode === 'online' && this.myPlayerId !== p) {
+            this.boardElement.classList.add('blocked');
+        } else {
+            this.boardElement.classList.remove('blocked');
         }
+        
+        if (this.uiTargetingMode) this.boardElement.classList.add(this.activeBoosters > 0 ? 'targeting-boosted' : 'targeting');
+        else this.boardElement.classList.remove('targeting', 'targeting-boosted');
     }
 
     showToast(m) {
@@ -1419,8 +1586,20 @@ class Connect5 {
     openSettings() { document.getElementById('settings-overlay').classList.add('visible'); }
     hideOverlay() { document.getElementById('overlay').classList.remove('visible'); }
 
-    saveToLocal() { localStorage.setItem('con5_v6_save', JSON.stringify(this.getState())); this.showToast("LOCAL STATE SAVED"); }
-    loadFromLocal() { const s = localStorage.getItem('con5_v6_save'); if (s) { this.setState(JSON.parse(s)); this.showToast("LOCAL STATE LOADED"); return true; } return false; }
+    saveToLocal() { 
+        if (this.gameMode === 'online') { this.showToast("SAVE DISABLED IN ONLINE"); return; }
+        this.autoSave();
+        this.showToast("LOCAL STATE SAVED"); 
+    }
+    loadFromLocal() { 
+        if (this.gameMode === 'online') { this.showToast("LOAD DISABLED IN ONLINE"); return; }
+        const s = localStorage.getItem('con5_v9_save'); if (s) { this.setState(JSON.parse(s)); this.showToast("LOCAL STATE LOADED"); return true; } return false; 
+    }
+    
+    autoSave() {
+         if (this.gameMode !== 'hotseat') return;
+         localStorage.setItem('con5_v9_save', JSON.stringify(this.getState()));
+    }
 }
 
 const game = new Connect5();
