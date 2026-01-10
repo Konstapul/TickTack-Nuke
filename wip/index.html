@@ -51,6 +51,7 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
+            height: 100vh;
         }
 
         h1 {
@@ -74,6 +75,50 @@
         .status-dot.connecting { background: #eab308; animation: blink-slow 1s infinite; }
         .status-dot.disconnected { background: #ef4444; }
 
+        /* --- MENUS & NAVIGATION --- */
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            flex: 1;
+            animation: fade-in 0.3s ease-out;
+        }
+        .screen.active { display: flex; }
+        
+        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .menu-container {
+            border: 1px solid var(--grid-color);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .menu-title { font-size: 2rem; margin-bottom: 30px; color: var(--text-main); text-shadow: 0 0 10px var(--text-main); }
+        .menu-btn {
+            display: block; width: 100%; margin: 15px 0; padding: 15px;
+            background: transparent; border: 1px solid var(--grid-color); color: var(--text-main);
+            font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
+            font-family: inherit; font-weight: bold; letter-spacing: 2px;
+        }
+        .menu-btn:hover { background: rgba(0, 240, 255, 0.1); border-color: var(--text-main); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
+        
+        .input-group { margin: 20px 0; display: flex; flex-direction: column; gap: 10px; }
+        .code-input { 
+            background: rgba(0,0,0,0.5); border: 1px solid var(--text-main); color: #fff; 
+            padding: 10px; font-family: 'Courier New', monospace; font-size: 1.5rem; text-align: center; 
+            letter-spacing: 5px; text-transform: uppercase;
+        }
+
+        .lobby-code { font-size: 3rem; color: var(--text-sec); margin: 20px 0; letter-spacing: 5px; font-weight: bold; user-select: text; }
+        .lobby-status { margin-bottom: 20px; color: #888; animation: blink-slow 2s infinite; }
+
+        /* --- GAME VIEW --- */
         .game-wrapper {
             display: flex;
             align-items: flex-start;
@@ -134,12 +179,8 @@
         }
         .chat-btn { border: none; border-left: 1px solid #334; width: 40px; color: var(--text-main); cursor: pointer; }
 
-        /* Room ID Input */
-        .room-controls { display: flex; gap: 5px; margin-bottom: 10px; align-items: center; }
-        .room-input {
-            background: rgba(0,0,0,0.3); border: 1px solid #334; color: var(--text-main);
-            padding: 4px; font-family: inherit; font-size: 0.7rem; width: 100px; text-align: center;
-        }
+        /* Room ID Input - HIDDEN IN GAME VIEW NOW */
+        .room-controls { display: none; } 
 
         .mini-grid {
             display: grid;
@@ -458,131 +499,172 @@
                 <div id="conn-dot" class="status-dot disconnected"></div>
                 <span id="conn-text">OFFLINE</span>
             </div>
-            <span>V.9.7 [PROTOCOL_FIX]</span>
+            <span>V.9.8 [NAV_FIX]</span>
         </div>
     </h1>
 
-    <div class="game-wrapper">
-        <div class="side-panel">
-            <h3>PATTERNS</h3>
-            <div class="tut-item">
-                <span class="tut-label">5-IN-ROW</span>
-                <div class="mini-grid grid-5row">
-                    <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
-                </div>
-                <div class="tut-desc">Win a Point.</div>
-            </div>
-            <div class="tut-item">
-                <span class="tut-label">2x2 SQUARE</span>
-                <div class="mini-grid grid-2x2">
-                    <div class="mini-cell active"></div><div class="mini-cell active"></div>
-                    <div class="mini-cell active"></div><div class="mini-cell active"></div>
-                </div>
-                <div class="tut-desc">Bonus Turn.</div>
-            </div>
-            <div class="tut-item">
-                <span class="tut-label">PLUS (+)</span>
-                <div class="mini-grid grid-plus">
-                    <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
-                    <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
-                    <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
-                </div>
-                <div class="tut-desc">Creates 5 Bunkers + Earn Booster.</div>
-            </div>
+    <!-- 1. MAIN MENU -->
+    <div id="screen-main-menu" class="screen active">
+        <div class="menu-container">
+            <div class="menu-title">SELECT MODE</div>
+            <button class="menu-btn" onclick="game.startHotseat()">LOCAL HOTSEAT</button>
+            <button class="menu-btn" onclick="game.showMultiplayerMenu()">ONLINE MULTIPLAYER</button>
+            <button class="menu-btn" disabled style="opacity:0.3;">AI OPPONENT (W.I.P)</button>
         </div>
+    </div>
 
-        <div class="game-center">
-            <div class="scoreboard">
-                <!-- Player 1 Panel -->
-                <div class="player-score p1-panel" id="p1-panel">
-                    <div class="player-label">COM-A (CYAN)</div>
-                    <div class="score-val" id="score1">0</div>
-                    <div class="resources-row">
-                        <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke1">0</span></div>
-                        <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost1">0</span></div>
-                        <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker1">0</span></div>
+    <!-- 2. MULTIPLAYER MENU -->
+    <div id="screen-multi-menu" class="screen">
+        <div class="menu-container">
+            <div class="menu-title">MULTIPLAYER</div>
+            <button class="menu-btn" onclick="game.hostGame()">HOST GAME</button>
+            <button class="menu-btn" onclick="game.showJoinInput()">JOIN GAME</button>
+            <button class="menu-btn" onclick="game.showMainMenu()" style="border-color:#333; color:#888;">BACK</button>
+        </div>
+    </div>
+
+    <!-- 3. JOIN INPUT -->
+    <div id="screen-join-input" class="screen">
+        <div class="menu-container">
+            <div class="menu-title">ENTER FREQUENCY</div>
+            <div class="input-group">
+                <input type="text" id="join-code" class="code-input" placeholder="0000" maxlength="8">
+            </div>
+            <button class="menu-btn" onclick="game.joinGame()">CONNECT</button>
+            <button class="menu-btn" onclick="game.showMultiplayerMenu()" style="border-color:#333; color:#888;">BACK</button>
+        </div>
+    </div>
+
+    <!-- 4. LOBBY WAITING -->
+    <div id="screen-lobby" class="screen">
+        <div class="menu-container">
+            <div class="menu-title">SECURE UPLINK</div>
+            <div class="lobby-status">WAITING FOR OPPONENT...</div>
+            <div id="lobby-code-display" class="lobby-code">ABCD-1234</div>
+            <div style="font-size:0.8rem; color:#666; margin-bottom:20px;">SHARE THIS CODE WITH COMMANDER B</div>
+            <button class="menu-btn" onclick="game.showMainMenu()" style="border-color:#333; color:#888;">ABORT</button>
+        </div>
+    </div>
+
+    <!-- 5. GAME VIEW -->
+    <div id="screen-game" class="screen">
+        <div class="game-wrapper">
+            <div class="side-panel">
+                <h3>PATTERNS</h3>
+                <div class="tut-item">
+                    <span class="tut-label">5-IN-ROW</span>
+                    <div class="mini-grid grid-5row">
+                        <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
                     </div>
+                    <div class="tut-desc">Win a Point.</div>
+                </div>
+                <div class="tut-item">
+                    <span class="tut-label">2x2 SQUARE</span>
+                    <div class="mini-grid grid-2x2">
+                        <div class="mini-cell active"></div><div class="mini-cell active"></div>
+                        <div class="mini-cell active"></div><div class="mini-cell active"></div>
+                    </div>
+                    <div class="tut-desc">Bonus Turn.</div>
+                </div>
+                <div class="tut-item">
+                    <span class="tut-label">PLUS (+)</span>
+                    <div class="mini-grid grid-plus">
+                        <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
+                        <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
+                        <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
+                    </div>
+                    <div class="tut-desc">Creates 5 Bunkers + Earn Booster.</div>
+                </div>
+            </div>
+
+            <div class="game-center">
+                <div class="scoreboard">
+                    <!-- Player 1 Panel -->
+                    <div class="player-score p1-panel" id="p1-panel">
+                        <div class="player-label">COM-A (CYAN)</div>
+                        <div class="score-val" id="score1">0</div>
+                        <div class="resources-row">
+                            <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke1">0</span></div>
+                            <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost1">0</span></div>
+                            <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker1">0</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Player 2 Panel -->
+                    <div class="player-score p2-panel" id="p2-panel">
+                        <div class="player-label">COM-B (AMBER)</div>
+                        <div class="score-val" id="score2">0</div>
+                        <div class="resources-row">
+                            <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke2">0</span></div>
+                            <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost2">0</span></div>
+                            <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker2">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="status-bar">
+                    <div id="status-text" class="status-text">INITIALIZING...</div>
+                    <div id="iso-indicator" class="isolation-indicator">CHECKING</div>
+                </div>
+
+                <div class="board-container">
+                    <div class="board" id="board"></div>
+                </div>
+
+                <div class="controls-area">
+                    <div class="panel">
+                        <h3>ARSENAL</h3>
+                        <div class="btn-group">
+                            <button id="btn-nuke" class="btn-nuke" onclick="game.uiToggleNuke()">LAUNCH ICBM</button>
+                            <button id="btn-boost" class="btn-boost" onclick="game.uiToggleBoost()">ENGAGE BOOSTER</button>
+                        </div>
+                        <div style="margin-top: 5px;">
+                             <button id="btn-craft" class="btn-boost" onclick="game.craftNuke()">CRAFT (3⚡→1☢)</button>
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <h3>SYSTEM</h3>
+                        <div class="btn-group">
+                            <button class="btn-system" onclick="game.openSettings()">SETTINGS</button>
+                            <button class="btn-system" onclick="game.saveToLocal()">SAVE</button>
+                            <button class="btn-system" onclick="game.showMainMenu()">QUIT</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <h3>RULES</h3>
+                <div class="tut-item">
+                    <span class="tut-label">WIN CONDITION</span>
+                    <div class="tut-desc">Score 3 points.</div>
+                </div>
+                <div class="tut-item">
+                    <span class="tut-label">TIE-BREAKER</span>
+                    <div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div>
                 </div>
                 
-                <!-- Player 2 Panel -->
-                <div class="player-score p2-panel" id="p2-panel">
-                    <div class="player-label">COM-B (AMBER)</div>
-                    <div class="score-val" id="score2">0</div>
-                    <div class="resources-row">
-                        <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke2">0</span></div>
-                        <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost2">0</span></div>
-                        <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker2">0</span></div>
-                    </div>
+                <h3>ORDNANCE</h3>
+                <div class="tut-item">
+                    <span class="tut-label">ACQUIRING NUKES</span>
+                    <div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div>
                 </div>
-            </div>
-
-            <div class="status-bar">
-                <div id="status-text" class="status-text">INITIALIZING...</div>
-                <div id="iso-indicator" class="isolation-indicator">CHECKING</div>
-            </div>
-
-            <div class="board-container">
-                <div class="board" id="board"></div>
-            </div>
-
-            <div class="controls-area">
-                <div class="panel">
-                    <h3>ARSENAL</h3>
-                    <div class="btn-group">
-                        <button id="btn-nuke" class="btn-nuke" onclick="game.uiToggleNuke()">LAUNCH ICBM</button>
-                        <button id="btn-boost" class="btn-boost" onclick="game.uiToggleBoost()">ENGAGE BOOSTER</button>
-                    </div>
-                    <div style="margin-top: 5px;">
-                         <button id="btn-craft" class="btn-boost" onclick="game.craftNuke()">CRAFT (3⚡→1☢)</button>
-                    </div>
+                <div class="tut-item">
+                    <span class="tut-label">STANDARD NUKE</span>
+                    <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
                 </div>
-                <div class="panel">
-                    <h3>SYSTEM</h3>
-                    <div class="btn-group">
-                        <button class="btn-system" onclick="game.openSettings()">SETTINGS</button>
-                        <button class="btn-system" onclick="game.saveToLocal()">SAVE</button>
-                        <button class="btn-system" onclick="game.loadFromLocal()">LOAD</button>
-                        <button class="btn-system" onclick="game.resetRound()">RESET</button>
-                    </div>
+                <div class="tut-item">
+                    <span class="tut-label">BOOSTED NUKE</span>
+                    <div class="tut-desc">Radius = 1 + Boosters used.<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
                 </div>
-            </div>
-        </div>
 
-        <div class="side-panel">
-            <h3>RULES</h3>
-            <div class="tut-item">
-                <span class="tut-label">WIN CONDITION</span>
-                <div class="tut-desc">Score 3 points.</div>
-            </div>
-            <div class="tut-item">
-                <span class="tut-label">TIE-BREAKER</span>
-                <div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div>
-            </div>
-            
-            <h3>ORDNANCE</h3>
-            <div class="tut-item">
-                <span class="tut-label">ACQUIRING NUKES</span>
-                <div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div>
-            </div>
-            <div class="tut-item">
-                <span class="tut-label">STANDARD NUKE</span>
-                <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
-            </div>
-            <div class="tut-item">
-                <span class="tut-label">BOOSTED NUKE</span>
-                <div class="tut-desc">Radius = 1 + Boosters used.<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
-            </div>
-
-            <h3>COMMUNICATIONS</h3>
-            <div class="room-controls">
-                <label>ROOM:</label>
-                <input type="text" id="room-input" class="room-input" onchange="game.joinRoom(this.value)">
-            </div>
-            <div class="chat-container">
-                <div id="chat-log" class="chat-log"></div>
-                <div class="chat-input-area">
-                    <input type="text" id="chat-input" class="chat-input" placeholder="Transmit...">
-                    <button class="chat-btn" onclick="game.sendChatFromInput()">></button>
+                <h3>COMMUNICATIONS</h3>
+                <div class="chat-container">
+                    <div id="chat-log" class="chat-log"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" class="chat-input" placeholder="Transmit...">
+                        <button class="chat-btn" onclick="game.sendChatFromInput()">></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -604,23 +686,6 @@
         <h2>SYSTEM SETTINGS</h2>
         
         <div class="setting-row">
-            <span class="setting-label">CONNECTION MODE</span>
-            <div class="btn-group">
-                <button onclick="game.setMode('hotseat')">HOTSEAT (LOCAL)</button>
-                <button onclick="game.setMode('online')">ONLINE (SERVER)</button>
-            </div>
-        </div>
-
-        <div class="setting-row">
-            <span class="setting-label">MAP SIZE (RESETS GAME)</span>
-            <div class="btn-group">
-                <button onclick="game.setMapSize(13)">13x13 (SKIRMISH)</button>
-                <button onclick="game.setMapSize(15)">15x15 (STANDARD)</button>
-                <button onclick="game.setMapSize(19)">19x19 (GLOBAL)</button>
-            </div>
-        </div>
-
-        <div class="setting-row">
             <span class="setting-label">UI SCALE</span>
             <input type="range" min="0.7" max="1.3" step="0.1" value="1" oninput="game.setScale(this.value)">
         </div>
@@ -633,13 +698,11 @@
 
 <script>
 /**
- * CONNECT 5: WAR ROOM v9.7 [PROTOCOL_FIX]
- * - Aligned client protocol with server expectations.
- * - Initial message type changed from 'join' to 'hello'.
- * - Removed redundant 'ping' (server uses native ping).
- * - Removed dead 'sendAction' code.
- * - Added 'lastMover' to state for server turn validation.
- * - Added role guard to prevent frozen UI before role assignment.
+ * CONNECT 5: WAR ROOM v9.8 [NAV_FIX]
+ * - Added Game Mode Gate (Main Menu).
+ * - Explicit Host/Join logic to prevent role races.
+ * - State machine ensures game only starts when connection is ready.
+ * - Host waits for P2 join signal before showing board.
  */
 
 class SoundSystem {
@@ -681,78 +744,75 @@ const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5
 let socket = null;
 let multiplayerEnabled = false;
 let clientId = Math.random().toString(36).substr(2, 9);
-let currentRoom = "WAR-ROOM-" + Math.floor(1000 + Math.random() * 9000); 
-let retryCount = 0;
-const MAX_RETRIES = 5;
+let currentRoom = ""; 
+let isHost = false;
 
-function initMultiplayer(gameInstance) {
-    document.getElementById('room-input').value = currentRoom;
+function initMultiplayer(gameInstance, roomCode, host) {
+    currentRoom = roomCode;
+    isHost = host;
+    
+    updateConnStatus("CONNECTING...", "connecting");
 
-    const connect = () => {
-        if (retryCount >= MAX_RETRIES) {
-            updateConnStatus("SERVER UNREACHABLE", "disconnected");
-            gameInstance.showToast("CONNECTION FAILED. TRY REFRESHING.");
-            return;
-        }
+    try {
+        socket = new WebSocket("wss://ticktack-nuke-server.onrender.com");
 
-        try {
-            socket = new WebSocket("wss://ticktack-nuke-server.onrender.com");
+        socket.onopen = () => {
+            console.log("Connected");
+            multiplayerEnabled = true;
+            updateConnStatus("ONLINE", "connected");
+            
+            socket.send(JSON.stringify({
+                type: "hello",
+                room: currentRoom
+            }));
+        };
 
-            socket.onopen = () => {
-                console.log("Connected");
-                retryCount = 0;
-                multiplayerEnabled = true;
-                updateConnStatus("ONLINE", "connected");
-                
-                // FIX 1: Send 'hello' instead of 'join' to avoid implicit join duplication
-                socket.send(JSON.stringify({
-                    type: "hello",
-                    room: currentRoom
-                }));
-                // FIX 2: Removed ping interval (server handles keepalive)
-            };
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.room !== currentRoom) return;
 
-            socket.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.room !== currentRoom) return;
-
-                    if (data.type === "role") {
-                        gameInstance.setLocalRole(data.playerId);
+                if (data.type === "role") {
+                    gameInstance.setLocalRole(data.playerId);
+                    // CRITICAL: If I am Joiner (P2), send initial state to wake up Host (P1)
+                    if (data.playerId === 2) {
+                        gameInstance.sendState(true); // Force send to wake host
+                        gameInstance.switchToGameView();
                     }
-                    else if (data.type === "state") {
-                        gameInstance.setState(data.state);
-                    } 
-                    else if (data.type === "chat") {
-                         gameInstance.addChatMessage(data.msg, data.role);
-                    }
-                    else if (data.type === "error") {
-                        gameInstance.showToast(data.msg);
-                    }
-                } catch(e) { console.error("Bad message", e); }
-            };
-
-            socket.onclose = () => {
-                console.log("Disconnected");
-                multiplayerEnabled = false;
-                if (retryCount < MAX_RETRIES) {
-                    updateConnStatus(`RECONNECTING (${retryCount+1}/${MAX_RETRIES})...`, "connecting");
-                    retryCount++;
-                    setTimeout(connect, 3000);
-                } else {
-                    updateConnStatus("DISCONNECTED", "disconnected");
+                    // If Host, wait for P2's signal (handled in "state" block below)
                 }
-            };
+                else if (data.type === "state") {
+                    // Host receives this from Joiner -> Game Starts
+                    if (isHost && document.getElementById('screen-lobby').classList.contains('active')) {
+                        gameInstance.switchToGameView();
+                        gameInstance.showToast("OPPONENT CONNECTED");
+                    }
+                    gameInstance.setState(data.state);
+                } 
+                else if (data.type === "chat") {
+                     gameInstance.addChatMessage(data.msg, data.role);
+                }
+                else if (data.type === "error") {
+                    gameInstance.showToast(data.msg);
+                }
+            } catch(e) { console.error("Bad message", e); }
+        };
 
-            socket.onerror = (e) => {
-                socket.close();
-            };
+        socket.onclose = () => {
+            console.log("Disconnected");
+            multiplayerEnabled = false;
+            updateConnStatus("DISCONNECTED", "disconnected");
+            gameInstance.showToast("CONNECTION LOST");
+        };
 
-        } catch (e) {
-            updateConnStatus("ERROR", "disconnected");
-        }
-    };
-    connect();
+        socket.onerror = (e) => {
+             updateConnStatus("ERROR", "disconnected");
+             socket.close();
+        };
+
+    } catch (e) {
+        updateConnStatus("ERROR", "disconnected");
+    }
 }
 
 function updateConnStatus(text, cls) {
@@ -801,54 +861,74 @@ class Connect5 {
         this.chatInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") this.sendChatFromInput();
         });
-
-        this.init();
+        
+        // Start by hiding game, showing menu
+        this.createBoard(this.mapSize); // Pre-init board
     }
 
-    init() {
-        if (!this.loadFromLocal()) this.createBoard(this.mapSize);
-        this.updateUI();
-        this.checkIsolationAvailability();
+    // --- NAVIGATION ---
+    
+    showScreen(id) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    
+    showMainMenu() { 
+        this.showScreen('screen-main-menu'); 
+        if(socket) socket.close(); // Disconnect if backing out
+    }
+    
+    showMultiplayerMenu() { this.showScreen('screen-multi-menu'); }
+    
+    showJoinInput() { this.showScreen('screen-join-input'); }
+
+    startHotseat() {
+        this.gameMode = 'hotseat';
+        this.myPlayerId = 0;
+        this.resetRound();
+        this.switchToGameView();
+        updateConnStatus("OFFLINE", "disconnected");
+        this.showToast("MODE: HOTSEAT");
         document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
     }
 
-    setMode(mode) {
-        this.gameMode = mode;
-        this.resetRound();
-        document.getElementById('settings-overlay').classList.remove('visible');
+    hostGame() {
+        this.gameMode = 'online';
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
+        document.getElementById('lobby-code-display').textContent = "WAR-ROOM-" + code;
+        this.showScreen('screen-lobby');
         
-        if (mode === 'online') {
-            this.myPlayerId = 0; 
-            if (!socket) initMultiplayer(this);
-            else this.joinRoom(currentRoom); 
-        } else {
-            this.myPlayerId = 0; 
-            if(socket) socket.close();
-            updateConnStatus("OFFLINE", "disconnected");
-            this.showToast("MODE: HOTSEAT");
-        }
+        this.resetRound();
+        initMultiplayer(this, "WAR-ROOM-" + code, true);
+        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
+    }
+
+    joinGame() {
+        const input = document.getElementById('join-code').value.toUpperCase().trim();
+        if(input.length < 4) { this.showToast("INVALID CODE"); return; }
+        
+        let finalCode = input;
+        if (!finalCode.startsWith("WAR-ROOM-")) finalCode = "WAR-ROOM-" + finalCode;
+
+        this.gameMode = 'online';
+        this.resetRound();
+        initMultiplayer(this, finalCode, false);
+        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
+    }
+
+    switchToGameView() {
+        this.showScreen('screen-game');
+        this.updateUI();
     }
 
     setLocalRole(id) {
         this.myPlayerId = id;
         const roleName = id === 1 ? "COMMANDER A" : (id === 2 ? "COMMANDER B" : "SPECTATOR");
-        document.getElementById('player-role').textContent = "YOU ARE: " + roleName;
+        // document.getElementById('player-role').textContent = "YOU ARE: " + roleName; // Element removed, using Toast
         this.showToast("ROLE ASSIGNED: " + roleName);
     }
 
     // --- NETWORKING ---
-
-    joinRoom(roomName) {
-        currentRoom = roomName || "WAR-ROOM-1";
-        this.logSystemMessage(`JOINED FREQUENCY: ${currentRoom}`);
-        if (socket && socket.readyState === 1) {
-             socket.send(JSON.stringify({type:"hello", room:currentRoom})); // FIX 1: Use 'hello'
-        } else if (!socket || socket.readyState === 3) {
-             initMultiplayer(this);
-        }
-    }
-
-    // FIX 3: Removed dead sendAction method
 
     sendChatFromInput() {
         const text = this.chatInput.value.trim();
@@ -923,16 +1003,7 @@ class Connect5 {
         
         // Handle 2x2 Animation from Server
         if (this.justEarnedBonus) {
-             const square = this.checkForSquare(this.lastMove.r, this.lastMove.c); // Last move triggered it? Or scan board?
-             // Since we have grid, let's scan all squares for "active" ones?
-             // Easier: assume it relates to lastMove for now or just play sound.
-             // Full fix: scan board for squares and apply class
-             for(let r=0; r<this.mapSize; r++) {
-                 for(let c=0; c<this.mapSize; c++) {
-                     // Check if this cell is part of a square
-                     // (Simplified visual fix: rely on lastMove for visual anchor or just sound)
-                 }
-             }
+             const square = this.checkForSquare(this.lastMove.r, this.lastMove.c); 
         }
         
         if (state.mapSize !== this.mapSize) {
@@ -947,13 +1018,6 @@ class Connect5 {
                     
                     if (newVal !== oldVal || isLast) {
                         this.updateCellVisual(r, c);
-                    }
-                    
-                    // Apply flash if needed (brute force check on recent squares)
-                    // If justEarnedBonus is true, we might want to re-flash the square
-                    if (this.justEarnedBonus) {
-                        // This logic could be improved by passing specific square coords in state
-                        // For now, sound + UI pulse handles feedback
                     }
                 }
             }
@@ -986,7 +1050,7 @@ class Connect5 {
         if (!this.gameActive) return;
 
         if (this.gameMode === 'online') {
-             if (this.myPlayerId === 0) return; // FIX 5: Role not assigned yet, ignore input to prevent freeze
+             if (this.myPlayerId === 0) return; // Role not assigned yet
              if (this.myPlayerId !== this.currentPlayer) {
                  this.showToast("WAIT FOR SIGNAL");
                  this.sound.playError();
@@ -994,8 +1058,7 @@ class Connect5 {
              }
         }
 
-        // --- NEW PIPELINE: MUTATE -> FINALIZE -> SEND ---
-        this.isSimulation = false; // We commit to moves locally
+        this.isSimulation = false; 
 
         if (move.type === 'place') {
             this.internalExecutePlace(move.r, move.c);
@@ -1005,20 +1068,17 @@ class Connect5 {
             this.internalExecuteCraft();
         }
         
-        // Finalize state and propagate
         this.sendState();
     }
 
     // --- NEW AUTHORITATIVE STATE FUNCTION ---
-    sendState() {
+    sendState(force = false) {
         const state = this.getState();
         
-        // FIX 4: Attach lastMover for server validation
         if (this.gameMode === 'online') {
             state.lastMover = this.myPlayerId;
         }
 
-        // 1. Broadcast if online
         if (this.gameMode === 'online' && socket && socket.readyState === 1) {
             socket.send(JSON.stringify({
                 type: "state",
@@ -1027,11 +1087,10 @@ class Connect5 {
             }));
         }
 
-        // 2. Update UI
-        this.updateUI();
-
-        // 3. Persist
-        this.autoSave();
+        if (!force) {
+            this.updateUI();
+            this.autoSave();
+        }
     }
 
     handleCellClick(r, c) {
@@ -1257,15 +1316,14 @@ class Connect5 {
         if (earnedBonus) {
             this.bonusTurn = true;
             this.checkIsolationAvailability(); 
-            this.refreshGridVisuals(); // ADDED
-            // this.updateUI(); // Removed from here, handled in applyMove
+            this.refreshGridVisuals(); 
             return;
         } 
         
         if (this.bonusTurn) {
             this.bonusTurn = false;
             this.ignoreIsolation = false;
-            this.refreshGridVisuals(); // ADDED
+            this.refreshGridVisuals();
             this.switchTurn();
         } else {
             this.switchTurn();
@@ -1602,7 +1660,7 @@ class Connect5 {
 }
 
 const game = new Connect5();
-initMultiplayer(game);
+// initMultiplayer(game); // Removed direct init
 </script>
 </body>
 </html>
