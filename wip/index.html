@@ -2,1665 +2,622 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect 5: War Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Connect 5: War Room (v10.0)</title>
     <style>
         :root {
+            /* --- CYBERPUNK PALETTE --- */
             --bg-color: #050a10;
             --panel-bg: rgba(10, 20, 30, 0.95);
-            --grid-color: #1a3c5a;
+            --grid-line: #1a3c5a;
+            
             --text-main: #64d2ff;  /* Cyan */
-            --text-sec: #ffaa00;   /* Amber */
-            --text-alert: #ff3333; /* Red */
-            --text-boost: #d946ef; /* Magenta */
-            
-            --p1-color: #00f0ff;   /* Neon Cyan */
-            --p2-color: #ffaa00;   /* Neon Amber */
-            
-            --scored-p1: #00f0ff;  
-            --scored-p2: #ffaa00;  
-            
-            --crater-bg: #000000;
-            --border-style: 1px solid #1a3c5a;
+            --text-warn: #ffaa00;  /* Amber */
+            --text-crit: #ff3333;  /* Red */
+            --text-rare: #d946ef;  /* Magenta */
+            --text-dim: #4a5a6a;
+
+            --p1-neon: #00f0ff;
+            --p2-neon: #ffaa00;
+            --bunker-white: #ffffff;
+            --crater-black: #000000;
+
+            --cell-size: clamp(20px, 4vw, 35px); /* Responsive cell size */
         }
+
+        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
             background-color: var(--bg-color);
             background-image: 
-                linear-gradient(rgba(5, 10, 16, 0.95), rgba(5, 10, 16, 0.95)),
-                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.5) 3px);
+                linear-gradient(rgba(0, 20, 40, 0.8) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 20, 40, 0.8) 1px, transparent 1px);
+            background-size: 40px 40px;
             color: var(--text-main);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            overflow-x: hidden;
-            user-select: none;
-        }
-
-        .app-root {
-            transition: transform 0.2s ease;
-            transform-origin: top center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            font-family: 'Courier New', Courier, monospace;
             height: 100vh;
-        }
-
-        h1 {
-            margin-bottom: 5px;
-            font-size: 1.8rem;
-            text-shadow: 0 0 5px var(--text-main);
-            border-bottom: 2px solid var(--text-main);
-            padding-bottom: 10px;
-            width: 100%;
-            max-width: 1000px;
-            text-align: center;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .sim-header-right { font-size: 0.7rem; opacity: 0.7; display: flex; gap: 15px; align-items: center; }
-        .connection-status { display: flex; align-items: center; gap: 5px; font-size: 0.7rem; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #333; box-shadow: 0 0 5px #333; transition: all 0.3s; }
-        .status-dot.connected { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
-        .status-dot.connecting { background: #eab308; animation: blink-slow 1s infinite; }
-        .status-dot.disconnected { background: #ef4444; }
-
-        /* --- MENUS & NAVIGATION --- */
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            width: 100%;
-            flex: 1;
-            animation: fade-in 0.3s ease-out;
-        }
-        .screen.active { display: flex; }
-        
-        @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .menu-container {
-            border: 1px solid var(--grid-color);
-            background: rgba(0, 0, 0, 0.8);
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
-            max-width: 500px;
-            width: 90%;
-        }
-        
-        .menu-title { font-size: 2rem; margin-bottom: 30px; color: var(--text-main); text-shadow: 0 0 10px var(--text-main); }
-        .menu-btn {
-            display: block; width: 100%; margin: 15px 0; padding: 15px;
-            background: transparent; border: 1px solid var(--grid-color); color: var(--text-main);
-            font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
-            font-family: inherit; font-weight: bold; letter-spacing: 2px;
-        }
-        .menu-btn:hover { background: rgba(0, 240, 255, 0.1); border-color: var(--text-main); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); }
-        
-        .input-group { margin: 20px 0; display: flex; flex-direction: column; gap: 10px; }
-        .code-input { 
-            background: rgba(0,0,0,0.5); border: 1px solid var(--text-main); color: #fff; 
-            padding: 10px; font-family: 'Courier New', monospace; font-size: 1.5rem; text-align: center; 
-            letter-spacing: 5px; text-transform: uppercase;
+            align-items: center;
+            overflow: hidden;
         }
 
-        .lobby-code { font-size: 3rem; color: var(--text-sec); margin: 20px 0; letter-spacing: 5px; font-weight: bold; user-select: text; }
-        .lobby-status { margin-bottom: 20px; color: #888; animation: blink-slow 2s infinite; }
-
-        /* --- GAME VIEW --- */
-        .game-wrapper {
+        /* --- LAYOUT --- */
+        #app {
             display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-            max-width: 1200px;
-        }
-
-        .side-panel {
-            width: 220px;
-            background: rgba(10, 20, 30, 0.6);
-            border: 1px solid #334;
-            padding: 15px;
-            font-size: 0.7rem;
-            color: #889;
-            display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 15px;
+            padding: 15px;
+            border: 2px solid var(--grid-line);
+            background: var(--panel-bg);
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            position: relative;
+            max-width: 100%;
+            max-height: 100%;
         }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 200px;
+        }
+
+        .panel {
+            border: 1px solid var(--grid-line);
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .panel-title {
+            position: absolute;
+            top: -8px;
+            left: 10px;
+            background: var(--bg-color);
+            padding: 0 5px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            border: 1px solid var(--grid-line);
+        }
+
+        h2 { margin: 5px 0 5px 0; font-size: 1rem; text-align: center; border-bottom: 1px solid var(--grid-line); padding-bottom: 5px; }
+        .p1-title { color: var(--p1-neon); text-shadow: 0 0 5px var(--p1-neon); }
+        .p2-title { color: var(--p2-neon); text-shadow: 0 0 5px var(--p2-neon); }
+
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 3px; font-size: 0.9rem; }
         
-        .side-panel h3 {
+        /* COMMANDS */
+        button {
+            background: #0a1015;
             color: var(--text-main);
-            border-bottom: 1px solid #334;
-            margin: 0 0 8px 0;
-            padding-bottom: 4px;
+            border: 1px solid var(--grid-line);
+            padding: 10px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            width: 100%;
+            margin-bottom: 8px;
+            font-weight: bold;
             font-size: 0.8rem;
         }
+        button:hover { background: var(--text-main); color: #000; border-color: var(--text-main); }
+        button:active { transform: translateY(1px); }
+        button:disabled { border-color: #333; color: #444; cursor: not-allowed; background: #050505; pointer-events: none; }
 
-        .tut-item { 
-            margin-bottom: 15px; 
+        /* SPECIAL BUTTONS */
+        button.nuke-btn { border-color: var(--text-crit); color: var(--text-crit); }
+        button.nuke-btn:hover { background: var(--text-crit); color: #000; }
+        button.nuke-btn.active { 
+            background: var(--text-crit); color: #000; 
+            box-shadow: 0 0 15px var(--text-crit); 
+            animation: pulse 1s infinite;
+        }
+        
+        button.craft-btn { border-color: var(--text-rare); color: var(--text-rare); }
+        button.craft-btn:hover { background: var(--text-rare); color: #000; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+        /* --- GAME GRID --- */
+        #board-container {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            text-align: center;
+            justify-content: center;
+            background: #000;
+            border: 1px solid var(--grid-line);
+            padding: 5px;
         }
-        .tut-label { color: #fff; font-weight: bold; display: block; margin-bottom: 6px; font-size: 0.75rem; }
-        .tut-desc { line-height: 1.3; margin-top: 6px; color: #aaa; }
 
-        /* Chat/Log Styles */
-        .chat-container {
-            display: flex; flex-direction: column; height: 200px;
-            border: 1px solid #334; background: rgba(0,0,0,0.3);
-        }
-        .chat-log {
-            flex: 1; overflow-y: auto; padding: 5px; font-size: 0.65rem;
-            display: flex; flex-direction: column; gap: 4px;
-            scrollbar-width: thin; scrollbar-color: #334 #000;
-        }
-        .chat-msg { word-break: break-word; }
-        .chat-msg.system { color: #aaa; font-style: italic; }
-        .chat-msg.p1 { color: var(--p1-color); }
-        .chat-msg.p2 { color: var(--p2-color); }
-        .chat-input-area { display: flex; border-top: 1px solid #334; }
-        .chat-input {
-            flex: 1; background: transparent; border: none; color: #fff;
-            padding: 5px; font-family: inherit; font-size: 0.7rem; outline: none;
-        }
-        .chat-btn { border: none; border-left: 1px solid #334; width: 40px; color: var(--text-main); cursor: pointer; }
-
-        /* Room ID Input - HIDDEN IN GAME VIEW NOW */
-        .room-controls { display: none; } 
-
-        .mini-grid {
+        #game-board {
             display: grid;
-            gap: 2px;
-            background: rgba(0,0,0,0.5);
-            padding: 4px;
-            border: 1px solid #334;
-            justify-content: center;
-            margin: 0 auto;
-        }
-        .mini-cell {
-            width: 10px;
-            height: 10px;
-            background: #1a2a3a;
-            border-radius: 50%;
-        }
-        .mini-cell.active {
-            background: var(--text-main);
-            box-shadow: 0 0 5px var(--text-main);
-        }
-        .grid-5row { grid-template-columns: repeat(5, 1fr); }
-        .grid-2x2 { grid-template-columns: repeat(2, 1fr); }
-        .grid-plus { grid-template-columns: repeat(3, 1fr); }
-
-        @media (max-width: 1000px) {
-            .side-panel { display: none; }
+            grid-template-columns: repeat(15, var(--cell-size));
+            grid-template-rows: repeat(15, var(--cell-size));
+            gap: 1px;
+            background: var(--grid-line);
         }
 
-        .game-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 600px;
-        }
-
-        .scoreboard {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 1rem;
-            width: 100%;
-        }
-
-        .player-score {
-            background: var(--panel-bg);
-            border: var(--border-style);
-            padding: 12px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            transition: all 0.3s;
-            opacity: 0.7;
-        }
-
-        .player-score.active-turn {
-            border-color: currentColor;
-            box-shadow: 0 0 25px rgba(255,255,255, 0.15), inset 0 0 10px rgba(255,255,255,0.05);
-            opacity: 1;
-            transform: scale(1.02);
-            z-index: 10;
-        }
-        
-        .player-score.bonus-pulse {
-            animation: bonus-pulse 0.6s ease-out;
-        }
-        
-        @keyframes bonus-pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 transparent; }
-            50% { transform: scale(1.08); box-shadow: 0 0 30px var(--text-boost); border-color: var(--text-boost); }
-            100% { transform: scale(1.02); }
-        }
-        
-        .p1-panel { color: var(--p1-color); }
-        .p2-panel { color: var(--p2-color); }
-
-        .score-val {
-            font-size: 2.5rem;
-            font-weight: bold;
-            line-height: 1;
-            margin: 5px 0 10px 0;
-            text-shadow: 0 0 10px currentColor;
-        }
-
-        .player-label { font-size: 0.75rem; font-weight: bold; margin-bottom: 5px; }
-
-        .resources-row {
-            display: flex;
-            gap: 5px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        .res-item {
-            font-size: 0.7rem;
-            border: 1px solid currentColor;
-            background: rgba(0,0,0,0.3);
-            text-align: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            padding: 4px 2px;
-        }
-        .res-val { font-size: 1rem; font-weight: bold; line-height: 1; }
-        .res-icon { font-size: 0.9rem; margin-bottom: 2px; display: block; }
-
-        .status-bar {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            min-height: 1.2em;
-        }
-        .status-text { animation: blink-slow 2s infinite; }
-        .status-bonus { color: var(--text-boost); animation: blink-fast 0.5s infinite alternate; }
-        
-        .isolation-indicator {
-            font-size: 0.7rem;
-            padding: 2px 6px;
-            border: 1px solid #333;
-            color: #555;
-            transition: all 0.3s;
-        }
-        .isolation-indicator.available {
-            border-color: var(--text-main);
-            color: var(--text-main);
-            box-shadow: 0 0 5px rgba(100, 210, 255, 0.2);
-        }
-        
-        @keyframes blink-slow { 50% { opacity: 0.6; } }
-        @keyframes blink-fast { from { opacity: 1; text-shadow: 0 0 10px currentColor; } to { opacity: 0.5; } }
-
-        .board-container {
-            position: relative;
-            padding: 4px;
-            border: 1px solid var(--grid-color);
-            background: rgba(0,0,0,0.5);
-            box-shadow: 0 0 30px rgba(0,0,0,0.8);
-        }
-        
-        .board-container.impact { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-        @keyframes shake { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } 40%, 60% { transform: translate3d(6px, 0, 0); } }
-
-        .board {
-            display: grid;
-            width: min(90vw, 550px);
-            height: min(90vw, 550px);
-            background: transparent;
-            border-top: 1px solid var(--grid-color);
-            border-left: 1px solid var(--grid-color);
-            cursor: crosshair;
-        }
-        
         .cell {
-            position: relative;
+            background: var(--bg-color);
+            width: var(--cell-size);
+            height: var(--cell-size);
             display: flex;
-            align-items: center;
             justify-content: center;
-            border-right: 1px solid var(--grid-color);
-            border-bottom: 1px solid var(--grid-color);
-            box-sizing: border-box; 
-            overflow: hidden; 
+            align-items: center;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.1s;
+            position: relative;
         }
+
+        .cell:hover { background: #1a2a3a; }
+
+        /* --- CELL STATES --- */
+        .cell.p1 { background: rgba(0, 240, 255, 0.2); box-shadow: inset 0 0 8px var(--p1-neon); }
+        .cell.p1::after { content: ''; width: 40%; height: 40%; background: var(--p1-neon); border-radius: 50%; box-shadow: 0 0 10px var(--p1-neon); }
+
+        .cell.p2 { background: rgba(255, 170, 0, 0.2); box-shadow: inset 0 0 8px var(--p2-neon); }
+        .cell.p2::after { content: ''; width: 40%; height: 40%; background: var(--p2-neon); transform: rotate(45deg); box-shadow: 0 0 10px var(--p2-neon); }
         
-        .cell.crater {
-            background: repeating-linear-gradient(
-                45deg,
-                #550000,
-                #550000 5px,
-                #000000 5px,
-                #000000 10px
-            );
-            border: 1px solid #ff0000;
-            box-shadow: inset 0 0 10px #ff0000;
-        }
-
-        .cell.invalid-isolation {
-            background: rgba(255, 50, 50, 0.2);
-            box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.4);
-        }
-
-        /* Blast Preview Style */
-        .cell.blast-preview {
-            box-shadow: inset 0 0 15px rgba(217, 70, 239, 0.6);
-            background: rgba(217, 70, 239, 0.15);
-            border: 1px solid rgba(217, 70, 239, 0.4);
-        }
-
-        .board.targeting .cell:hover { background: rgba(0, 255, 255, 0.1); box-shadow: inset 0 0 10px cyan; }
-        .board.targeting .cell.invalid-target:hover { background: rgba(255, 0, 0, 0.2); box-shadow: inset 0 0 10px red; cursor: not-allowed; }
+        .cell.p1-scored { background: var(--p1-neon); }
+        .cell.p1-scored::after { background: #fff; }
         
-        .board.targeting-boosted .cell:hover { 
-            background: rgba(217, 70, 239, 0.2); 
-            box-shadow: inset 0 0 15px var(--text-boost); 
+        .cell.p2-scored { background: var(--p2-neon); }
+        .cell.p2-scored::after { background: #fff; }
+
+        /* Bunker Styles */
+        .cell.bunker { border: 2px solid #fff; z-index: 2; }
+        .cell.bunker::before { content: "+"; color: #fff; font-weight: 900; font-size: 1.2em; position: absolute; }
+        .cell.bunker.p1 { box-shadow: 0 0 10px var(--p1-neon), inset 0 0 5px var(--p1-neon); }
+        .cell.bunker.p2 { box-shadow: 0 0 10px var(--p2-neon), inset 0 0 5px var(--p2-neon); }
+
+        /* Destruction */
+        .cell.crater { 
+            background: #000; 
+            background-image: radial-gradient(circle, #200 10%, #000 70%);
+            border: 1px dashed #500;
         }
+        .cell.crater::after { content: ''; display: none; } /* Hide pieces in crater */
 
-        .piece {
-            width: 60%; height: 60%; border-radius: 50%;
-            transition: all 0.2s; 
-            box-sizing: border-box;
-            /* Default shadow moved to specific classes */
+        /* --- OVERLAYS --- */
+        #overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s;
         }
-        
-        /* CSS Variables for scoped color usage */
-        .piece.p1 { --pc: var(--p1-color); background-color: var(--pc); box-shadow: 0 0 8px var(--pc); }
-        .piece.p2 { --pc: var(--p2-color); background-color: var(--pc); box-shadow: 0 0 8px var(--pc); }
-        
-        .piece.placed { animation: ping 0.4s ease-out; }
-        @keyframes ping { 0% { box-shadow: 0 0 0 0 currentColor; } 100% { box-shadow: 0 0 0 15px transparent; } }
+        .hidden { opacity: 0; pointer-events: none; }
 
-        .piece.last-move {
-            box-shadow: 0 0 0 2px #fff, 0 0 15px #fff !important;
-            z-index: 10;
+        input {
+            background: #080f15; border: 1px solid var(--text-main); 
+            color: var(--text-main); padding: 12px; margin-bottom: 15px;
+            font-family: inherit; text-align: center; width: 250px;
+            font-size: 1.1rem; text-transform: uppercase;
         }
+        input:focus { outline: none; border-color: #fff; box-shadow: 0 0 15px var(--text-main); }
 
-        .piece.scored { 
-            background-color: transparent !important;
-            box-shadow: inset 0 0 0 3px var(--pc), 0 0 15px var(--pc) !important;
-            width: 65%; height: 65%; 
-        }
-
-        .piece.square-flash {
-            animation: flash-square 0.5s ease-out;
-        }
-        @keyframes flash-square {
-            0% { transform: scale(1); filter: brightness(1); }
-            50% { transform: scale(1.3); filter: brightness(2); box-shadow: 0 0 20px #fff; }
-            100% { transform: scale(1); filter: brightness(1); }
-        }
-
-        .piece.bunker {
-            border-radius: 10%; 
-            width: 75%; height: 75%;
-            background: repeating-linear-gradient(45deg, var(--pc), var(--pc) 2px, transparent 2px, transparent 4px);
-            box-shadow: 0 0 0 2px var(--pc), 0 0 10px var(--pc);
-            z-index: 5;
-        }
-        .piece.bunker.scored {
-            background: transparent !important;
-            box-shadow: inset 0 0 0 3px var(--pc), 0 0 10px var(--pc) !important;
-            border: none; /* use box-shadow for color control */
-        }
-        
-        .piece.bunker.forming { animation: bunker-lock 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes bunker-lock { 0% { transform: scale(1.2); opacity: 0.5; } 50% { transform: scale(0.8); } 100% { transform: scale(1); opacity: 1; } }
-
-        .controls-area {
-            width: 100%; margin-top: 15px;
-            display: grid; grid-template-columns: 2fr 1fr; gap: 15px;
-        }
-        
-        .panel { padding: 10px; border: 1px solid #333; background: rgba(0,0,0,0.5); }
-        .panel h3 { margin: 0 0 10px 0; font-size: 0.7rem; color: #888; border-bottom: 1px solid #333; letter-spacing: 2px; }
-
-        .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-
-        button {
-            background: transparent; color: #888; border: 1px solid #444;
-            padding: 8px 12px; font-family: inherit; font-size: 0.7rem; font-weight: bold;
-            cursor: pointer; transition: all 0.2s; flex: 1; min-width: 80px;
-        }
-        button:hover:not(:disabled) { border-color: #fff; color: #fff; background: rgba(255,255,255,0.1); }
-        button:disabled { opacity: 0.3; cursor: not-allowed; }
-
-        .btn-nuke { color: var(--text-alert); border-color: var(--text-alert); }
-        .btn-nuke:hover:not(:disabled) { background: rgba(255, 0, 0, 0.1); box-shadow: 0 0 10px rgba(255,0,0,0.4); }
-        .btn-nuke.active { background: var(--text-alert); color: #000; }
-
-        .btn-boost { color: var(--text-boost); border-color: var(--text-boost); }
-        .btn-boost:hover:not(:disabled) { background: rgba(217, 70, 239, 0.1); box-shadow: 0 0 10px rgba(217, 70, 239, 0.4); }
-        .btn-boost.active { background: var(--text-boost); color: #000; box-shadow: 0 0 15px var(--text-boost); animation: pulse-btn 1s infinite; }
-
-        @keyframes pulse-btn { 0% { opacity: 1; } 50% { opacity: 0.8; transform: scale(0.98); } 100% { opacity: 1; } }
-
-        .btn-system { border-color: #1a3c5a; }
-
-        .overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); z-index: 100;
+        #turn-indicator {
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            background: #050505;
+            border: 1px solid var(--grid-line);
+            margin-bottom: 10px;
+            min-height: 40px;
             display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.5s;
         }
-        .overlay.visible { opacity: 1; pointer-events: auto; }
-        .modal { border: 2px solid var(--text-main); padding: 40px; text-align: center; background: #050a10; min-width: 300px;}
-        .modal h2 { margin-top: 0; margin-bottom: 20px; font-size: 1.5rem; color: var(--text-main); }
-        .modal-btn-group { display: flex; flex-direction: column; gap: 15px; }
-        .btn-view-board { border-color: #666; color: #aaa; }
-        
-        .setting-row { margin-bottom: 20px; text-align: left; }
-        .setting-label { display: block; margin-bottom: 10px; font-size: 0.8rem; color: #aaa; }
-        .range-wrap { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: 0.8rem; }
-        input[type=range] { flex: 1; }
 
-        .toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(10, 20, 30, 0.95); border: 1px solid var(--text-main);
-            color: var(--text-main); padding: 10px 20px; font-size: 0.8rem;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
+        #logs {
+            flex-grow: 1;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            color: #666;
+            border-top: 1px solid var(--grid-line);
+            margin-top: 10px;
+            padding-top: 5px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--grid-line) #000;
         }
-        .toast.show { opacity: 1; }
+        .log-msg { margin-bottom: 2px; font-family: monospace; }
+        .log-sys { color: var(--text-main); }
+        .log-err { color: var(--text-crit); }
+        .log-chat { color: #fff; background: rgba(255,255,255,0.1); padding: 1px 3px; }
+
+        /* Responsive Layout */
+        @media (max-width: 800px) {
+            #app { flex-direction: column-reverse; width: 100%; height: 100%; border: none; }
+            #sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; height: auto; min-height: 120px; }
+            .panel { flex: 1; min-width: 140px; }
+            #logs { display: none; } /* Hide logs on mobile to save space */
+            #board-container { flex-grow: 1; border: none; }
+            :root { --cell-size: clamp(15px, 8vw, 30px); }
+        }
+
     </style>
 </head>
 <body>
 
-<div class="app-root" id="app-root">
-
-    <h1>
-        <span>WAR ROOM // SYMMETRIC</span>
-        <div class="sim-header-right">
-            <div class="connection-status">
-                <div id="conn-dot" class="status-dot disconnected"></div>
-                <span id="conn-text">OFFLINE</span>
-            </div>
-            <span>V.9.8 [NAV_FIX]</span>
-        </div>
-    </h1>
-
-    <!-- 1. MAIN MENU -->
-    <div id="screen-main-menu" class="screen active">
-        <div class="menu-container">
-            <div class="menu-title">SELECT MODE</div>
-            <button class="menu-btn" onclick="game.startHotseat()">LOCAL HOTSEAT</button>
-            <button class="menu-btn" onclick="game.showMultiplayerMenu()">ONLINE MULTIPLAYER</button>
-            <button class="menu-btn" disabled style="opacity:0.3;">AI OPPONENT (W.I.P)</button>
-        </div>
-    </div>
-
-    <!-- 2. MULTIPLAYER MENU -->
-    <div id="screen-multi-menu" class="screen">
-        <div class="menu-container">
-            <div class="menu-title">MULTIPLAYER</div>
-            <button class="menu-btn" onclick="game.hostGame()">HOST GAME</button>
-            <button class="menu-btn" onclick="game.showJoinInput()">JOIN GAME</button>
-            <button class="menu-btn" onclick="game.showMainMenu()" style="border-color:#333; color:#888;">BACK</button>
-        </div>
-    </div>
-
-    <!-- 3. JOIN INPUT -->
-    <div id="screen-join-input" class="screen">
-        <div class="menu-container">
-            <div class="menu-title">ENTER FREQUENCY</div>
-            <div class="input-group">
-                <input type="text" id="join-code" class="code-input" placeholder="0000" maxlength="8">
-            </div>
-            <button class="menu-btn" onclick="game.joinGame()">CONNECT</button>
-            <button class="menu-btn" onclick="game.showMultiplayerMenu()" style="border-color:#333; color:#888;">BACK</button>
-        </div>
-    </div>
-
-    <!-- 4. LOBBY WAITING -->
-    <div id="screen-lobby" class="screen">
-        <div class="menu-container">
-            <div class="menu-title">SECURE UPLINK</div>
-            <div class="lobby-status">WAITING FOR OPPONENT...</div>
-            <div id="lobby-code-display" class="lobby-code">ABCD-1234</div>
-            <div style="font-size:0.8rem; color:#666; margin-bottom:20px;">SHARE THIS CODE WITH COMMANDER B</div>
-            <button class="menu-btn" onclick="game.showMainMenu()" style="border-color:#333; color:#888;">ABORT</button>
-        </div>
-    </div>
-
-    <!-- 5. GAME VIEW -->
-    <div id="screen-game" class="screen">
-        <div class="game-wrapper">
-            <div class="side-panel">
-                <h3>PATTERNS</h3>
-                <div class="tut-item">
-                    <span class="tut-label">5-IN-ROW</span>
-                    <div class="mini-grid grid-5row">
-                        <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
-                    </div>
-                    <div class="tut-desc">Win a Point.</div>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-label">2x2 SQUARE</span>
-                    <div class="mini-grid grid-2x2">
-                        <div class="mini-cell active"></div><div class="mini-cell active"></div>
-                        <div class="mini-cell active"></div><div class="mini-cell active"></div>
-                    </div>
-                    <div class="tut-desc">Bonus Turn.</div>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-label">PLUS (+)</span>
-                    <div class="mini-grid grid-plus">
-                        <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
-                        <div class="mini-cell active"></div><div class="mini-cell active"></div><div class="mini-cell active"></div>
-                        <div class="mini-cell"></div><div class="mini-cell active"></div><div class="mini-cell"></div>
-                    </div>
-                    <div class="tut-desc">Creates 5 Bunkers + Earn Booster.</div>
-                </div>
-            </div>
-
-            <div class="game-center">
-                <div class="scoreboard">
-                    <!-- Player 1 Panel -->
-                    <div class="player-score p1-panel" id="p1-panel">
-                        <div class="player-label">COM-A (CYAN)</div>
-                        <div class="score-val" id="score1">0</div>
-                        <div class="resources-row">
-                            <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke1">0</span></div>
-                            <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost1">0</span></div>
-                            <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker1">0</span></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Player 2 Panel -->
-                    <div class="player-score p2-panel" id="p2-panel">
-                        <div class="player-label">COM-B (AMBER)</div>
-                        <div class="score-val" id="score2">0</div>
-                        <div class="resources-row">
-                            <div class="res-item"><span class="res-icon">☢</span><span class="res-val" id="nuke2">0</span></div>
-                            <div class="res-item"><span class="res-icon">⚡</span><span class="res-val" id="boost2">0</span></div>
-                            <div class="res-item"><span class="res-icon">⛨</span><span class="res-val" id="bunker2">0</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="status-bar">
-                    <div id="status-text" class="status-text">INITIALIZING...</div>
-                    <div id="iso-indicator" class="isolation-indicator">CHECKING</div>
-                </div>
-
-                <div class="board-container">
-                    <div class="board" id="board"></div>
-                </div>
-
-                <div class="controls-area">
-                    <div class="panel">
-                        <h3>ARSENAL</h3>
-                        <div class="btn-group">
-                            <button id="btn-nuke" class="btn-nuke" onclick="game.uiToggleNuke()">LAUNCH ICBM</button>
-                            <button id="btn-boost" class="btn-boost" onclick="game.uiToggleBoost()">ENGAGE BOOSTER</button>
-                        </div>
-                        <div style="margin-top: 5px;">
-                             <button id="btn-craft" class="btn-boost" onclick="game.craftNuke()">CRAFT (3⚡→1☢)</button>
-                        </div>
-                    </div>
-                    <div class="panel">
-                        <h3>SYSTEM</h3>
-                        <div class="btn-group">
-                            <button class="btn-system" onclick="game.openSettings()">SETTINGS</button>
-                            <button class="btn-system" onclick="game.saveToLocal()">SAVE</button>
-                            <button class="btn-system" onclick="game.showMainMenu()">QUIT</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-panel">
-                <h3>RULES</h3>
-                <div class="tut-item">
-                    <span class="tut-label">WIN CONDITION</span>
-                    <div class="tut-desc">Score 3 points.</div>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-label">TIE-BREAKER</span>
-                    <div class="tut-desc">If board full:<br>1. Score<br>2. Bunkers</div>
-                </div>
-                
-                <h3>ORDNANCE</h3>
-                <div class="tut-item">
-                    <span class="tut-label">ACQUIRING NUKES</span>
-                    <div class="tut-desc">Score 1st point = +1 Nuke.<br>Score 2nd point = Enemy +1 Nuke.</div>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-label">STANDARD NUKE</span>
-                    <div class="tut-desc">Radius 1 (Cross).<br>Target: YOUR UNITS ONLY.<br>Blocked by Bunkers.</div>
-                </div>
-                <div class="tut-item">
-                    <span class="tut-label">BOOSTED NUKE</span>
-                    <div class="tut-desc">Radius = 1 + Boosters used.<br>Target: ANYWHERE.<br>Destroys Bunkers.</div>
-                </div>
-
-                <h3>COMMUNICATIONS</h3>
-                <div class="chat-container">
-                    <div id="chat-log" class="chat-log"></div>
-                    <div class="chat-input-area">
-                        <input type="text" id="chat-input" class="chat-input" placeholder="Transmit...">
-                        <button class="chat-btn" onclick="game.sendChatFromInput()">></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="overlay">
-    <div class="modal">
-        <h2 id="winner-title">VICTORY</h2>
-        <div class="modal-btn-group">
-            <button class="btn-system" onclick="game.resetRound()">RESTART SIMULATION</button>
-            <button class="btn-view-board" onclick="game.hideOverlay()">VIEW BOARD STATE</button>
-        </div>
-    </div>
-</div>
-
-<div class="overlay" id="settings-overlay">
-    <div class="modal">
-        <h2>SYSTEM SETTINGS</h2>
+    <!-- CONNECT OVERLAY -->
+    <div id="overlay">
+        <h1 style="color:var(--text-warn); text-shadow:0 0 20px var(--text-warn); letter-spacing: 5px;">WAR ROOM</h1>
+        <div style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">V10.0 // SECURE UPLINK</div>
         
-        <div class="setting-row">
-            <span class="setting-label">UI SCALE</span>
-            <input type="range" min="0.7" max="1.3" step="0.1" value="1" oninput="game.setScale(this.value)">
-        </div>
-
-        <button class="btn-system" onclick="document.getElementById('settings-overlay').classList.remove('visible')">CLOSE</button>
+        <input type="text" id="room-input" placeholder="ENTER ROOM CODE" value="WAR1" maxlength="6">
+        <button style="width: 250px; font-size: 1.2rem;" onclick="app.connect()">ESTABLISH LINK</button>
+        
+        <p id="conn-status" style="color: var(--text-crit); height: 20px; font-size: 0.8rem;"></p>
     </div>
-</div>
 
-<div id="toast" class="toast"></div>
-
-<script>
-/**
- * CONNECT 5: WAR ROOM v9.8 [NAV_FIX]
- * - Added Game Mode Gate (Main Menu).
- * - Explicit Host/Join logic to prevent role races.
- * - State machine ensures game only starts when connection is ready.
- * - Host waits for P2 join signal before showing board.
- */
-
-class SoundSystem {
-    constructor() { this.ctx = null; }
-    init() { if (!this.ctx) { const AC = window.AudioContext || window.webkitAudioContext; this.ctx = new AC(); } if (this.ctx.state === 'suspended') this.ctx.resume(); }
-    playTone(f, t, d, v=0.1) {
-        if (!this.ctx) return;
-        const o = this.ctx.createOscillator(); const g = this.ctx.createGain();
-        o.type = t; o.frequency.setValueAtTime(f, this.ctx.currentTime);
-        g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
-        o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime + d);
-    }
-    playNoise(d, v=0.2) {
-        if (!this.ctx) return;
-        const b = this.ctx.createBuffer(1, this.ctx.sampleRate * d, this.ctx.sampleRate);
-        const data = b.getChannelData(0); for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-        const s = this.ctx.createBufferSource(); s.buffer = b;
-        const g = this.ctx.createGain(); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + d);
-        s.connect(g); g.connect(this.ctx.destination); s.start();
-    }
-    playPlaceP1() { this.playTone(600, 'sine', 0.1); } 
-    playPlaceP2() { this.playTone(400, 'sine', 0.12); } 
-    playBonus() { this.playTone(800, 'square', 0.1); setTimeout(() => this.playTone(1200, 'square', 0.2), 100); }
-    playScore() { this.playTone(400, 'sawtooth', 0.1); setTimeout(() => this.playTone(600, 'sawtooth', 0.1), 100); setTimeout(() => this.playTone(900, 'sawtooth', 0.4), 200); }
-    playNuke() { this.playNoise(0.5); }
-    playBunker() { this.playTone(150, 'square', 0.4, 0.2); }
-    playError() { this.playTone(150, 'sawtooth', 0.2); }
-    playCraft() { 
-        this.playTone(300, 'square', 0.1, 0.1); 
-        setTimeout(() => this.playTone(450, 'square', 0.1, 0.1), 100);
-        setTimeout(() => this.playTone(600, 'square', 0.2, 0.1), 200);
-    }
-}
-
-const STATE = { EMPTY: 0, P1: 1, P2: 2, P1_SCORED: 3, P2_SCORED: 4, P1_BUNKER: 5, P2_BUNKER: 6, P1_BUNKER_SCORED: 7, P2_BUNKER_SCORED: 8, CRATER: 9 };
-
-// --- MULTIPLAYER CLIENT ---
-
-let socket = null;
-let multiplayerEnabled = false;
-let clientId = Math.random().toString(36).substr(2, 9);
-let currentRoom = ""; 
-let isHost = false;
-
-function initMultiplayer(gameInstance, roomCode, host) {
-    currentRoom = roomCode;
-    isHost = host;
-    
-    updateConnStatus("CONNECTING...", "connecting");
-
-    try {
-        socket = new WebSocket("wss://ticktack-nuke-server.onrender.com");
-
-        socket.onopen = () => {
-            console.log("Connected");
-            multiplayerEnabled = true;
-            updateConnStatus("ONLINE", "connected");
+    <!-- MAIN INTERFACE -->
+    <div id="app" class="hidden">
+        
+        <!-- SIDEBAR CONTROLS -->
+        <div id="sidebar">
+            <div id="turn-indicator">INITIALIZING...</div>
             
-            socket.send(JSON.stringify({
-                type: "hello",
-                room: currentRoom
-            }));
-        };
+            <div class="panel">
+                <div class="panel-title">STATUS: P1</div>
+                <h2 class="p1-title">PLAYER 1</h2>
+                <div class="stat-row"><span>SCORE</span> <span id="p1-score">0</span></div>
+                <div class="stat-row"><span>NUKES</span> <span id="p1-nuke">0</span></div>
+                <div class="stat-row"><span>BOOST</span> <span id="p1-boost">0</span></div>
+                <div class="stat-row"><span>BUNKERS</span> <span id="p1-bunkers">0</span></div>
+            </div>
 
-        socket.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.room !== currentRoom) return;
+            <div class="panel">
+                <div class="panel-title">STATUS: P2</div>
+                <h2 class="p2-title">PLAYER 2</h2>
+                <div class="stat-row"><span>SCORE</span> <span id="p2-score">0</span></div>
+                <div class="stat-row"><span>NUKES</span> <span id="p2-nuke">0</span></div>
+                <div class="stat-row"><span>BOOST</span> <span id="p2-boost">0</span></div>
+                <div class="stat-row"><span>BUNKERS</span> <span id="p2-bunkers">0</span></div>
+            </div>
 
-                if (data.type === "role") {
-                    gameInstance.setLocalRole(data.playerId);
-                    // CRITICAL: If I am Joiner (P2), send initial state to wake up Host (P1)
-                    if (data.playerId === 2) {
-                        gameInstance.sendState(true); // Force send to wake host
-                        gameInstance.switchToGameView();
-                    }
-                    // If Host, wait for P2's signal (handled in "state" block below)
-                }
-                else if (data.type === "state") {
-                    // Host receives this from Joiner -> Game Starts
-                    if (isHost && document.getElementById('screen-lobby').classList.contains('active')) {
-                        gameInstance.switchToGameView();
-                        gameInstance.showToast("OPPONENT CONNECTED");
-                    }
-                    gameInstance.setState(data.state);
-                } 
-                else if (data.type === "chat") {
-                     gameInstance.addChatMessage(data.msg, data.role);
-                }
-                else if (data.type === "error") {
-                    gameInstance.showToast(data.msg);
-                }
-            } catch(e) { console.error("Bad message", e); }
-        };
-
-        socket.onclose = () => {
-            console.log("Disconnected");
-            multiplayerEnabled = false;
-            updateConnStatus("DISCONNECTED", "disconnected");
-            gameInstance.showToast("CONNECTION LOST");
-        };
-
-        socket.onerror = (e) => {
-             updateConnStatus("ERROR", "disconnected");
-             socket.close();
-        };
-
-    } catch (e) {
-        updateConnStatus("ERROR", "disconnected");
-    }
-}
-
-function updateConnStatus(text, cls) {
-    const dot = document.getElementById('conn-dot');
-    const txt = document.getElementById('conn-text');
-    if(dot && txt) {
-        dot.className = `status-dot ${cls}`;
-        txt.textContent = text;
-    }
-}
-
-class Connect5 {
-    constructor() {
-        this.mapSize = 15;
-        this.winningScore = 3;
-        this.sound = new SoundSystem();
-        
-        // Mode: 'hotseat' | 'online'
-        this.gameMode = 'hotseat'; 
-        this.myPlayerId = 0; 
-
-        this.grid = [];
-        this.currentPlayer = 1;
-        this.scores = { 1: 0, 2: 0 };
-        this.nukes = { 1: 0, 2: 0 };
-        this.boosters = { 1: 0, 2: 0 };
-        this.bunkers = { 1: 0, 2: 0 };
-        this.bonusTurn = false;
-        this.ignoreIsolation = false;
-        this.lastMove = null;
-        this.gameActive = true;
-        this.justEarnedBonus = false; 
-
-        this.uiTargetingMode = false;
-        this.activeBoosters = 0;
-        this.isSimulation = false; 
-
-        this.boardElement = document.getElementById('board');
-        this.appRoot = document.getElementById('app-root');
-        this.statusText = document.getElementById('status-text');
-        this.isoIndicator = document.getElementById('iso-indicator');
-        this.toast = document.getElementById('toast');
-        this.chatLog = document.getElementById('chat-log');
-        this.chatInput = document.getElementById('chat-input');
-
-        this.chatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") this.sendChatFromInput();
-        });
-        
-        // Start by hiding game, showing menu
-        this.createBoard(this.mapSize); // Pre-init board
-    }
-
-    // --- NAVIGATION ---
-    
-    showScreen(id) {
-        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-    
-    showMainMenu() { 
-        this.showScreen('screen-main-menu'); 
-        if(socket) socket.close(); // Disconnect if backing out
-    }
-    
-    showMultiplayerMenu() { this.showScreen('screen-multi-menu'); }
-    
-    showJoinInput() { this.showScreen('screen-join-input'); }
-
-    startHotseat() {
-        this.gameMode = 'hotseat';
-        this.myPlayerId = 0;
-        this.resetRound();
-        this.switchToGameView();
-        updateConnStatus("OFFLINE", "disconnected");
-        this.showToast("MODE: HOTSEAT");
-        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
-    }
-
-    hostGame() {
-        this.gameMode = 'online';
-        const code = Math.floor(1000 + Math.random() * 9000).toString();
-        document.getElementById('lobby-code-display').textContent = "WAR-ROOM-" + code;
-        this.showScreen('screen-lobby');
-        
-        this.resetRound();
-        initMultiplayer(this, "WAR-ROOM-" + code, true);
-        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
-    }
-
-    joinGame() {
-        const input = document.getElementById('join-code').value.toUpperCase().trim();
-        if(input.length < 4) { this.showToast("INVALID CODE"); return; }
-        
-        let finalCode = input;
-        if (!finalCode.startsWith("WAR-ROOM-")) finalCode = "WAR-ROOM-" + finalCode;
-
-        this.gameMode = 'online';
-        this.resetRound();
-        initMultiplayer(this, finalCode, false);
-        document.body.addEventListener('mousedown', () => this.sound.init(), {once:true});
-    }
-
-    switchToGameView() {
-        this.showScreen('screen-game');
-        this.updateUI();
-    }
-
-    setLocalRole(id) {
-        this.myPlayerId = id;
-        const roleName = id === 1 ? "COMMANDER A" : (id === 2 ? "COMMANDER B" : "SPECTATOR");
-        // document.getElementById('player-role').textContent = "YOU ARE: " + roleName; // Element removed, using Toast
-        this.showToast("ROLE ASSIGNED: " + roleName);
-    }
-
-    // --- NETWORKING ---
-
-    sendChatFromInput() {
-        const text = this.chatInput.value.trim();
-        if (!text) return;
-        
-        const role = this.gameMode === 'hotseat' ? (this.currentPlayer===1?'p1':'p2') : (this.myPlayerId === 1 ? 'p1' : (this.myPlayerId===2 ? 'p2' : 'system'));
-        
-        this.addChatMessage(text, role);
-        this.chatInput.value = "";
-
-        if (this.gameMode === 'online' && socket?.readyState === 1) {
-            socket.send(JSON.stringify({
-                type: "chat",
-                room: currentRoom,
-                sender: clientId,
-                msg: text,
-                role: role
-            }));
-        }
-    }
-
-    addChatMessage(text, role) {
-        const div = document.createElement("div");
-        div.className = `chat-msg ${role || 'system'}`;
-        const prefix = role === "p1" ? "COM-A: " : (role === "p2" ? "COM-B: " : "> ");
-        div.textContent = prefix + text;
-        this.chatLog.appendChild(div);
-        this.chatLog.scrollTop = this.chatLog.scrollHeight;
-    }
-
-    logSystemMessage(text) {
-        this.addChatMessage(text, "system");
-    }
-
-    // --- STATE MANAGEMENT ---
-
-    getState() {
-        return {
-            grid: JSON.parse(JSON.stringify(this.grid)),
-            currentPlayer: this.currentPlayer,
-            scores: { ...this.scores },
-            nukes: { ...this.nukes },
-            boosters: { ...this.boosters },
-            bunkers: { ...this.bunkers },
-            bonusTurn: this.bonusTurn,
-            ignoreIsolation: this.ignoreIsolation,
-            lastMove: this.lastMove ? { ...this.lastMove } : null,
-            gameActive: this.gameActive,
-            mapSize: this.mapSize,
-            justEarnedBonus: this.justEarnedBonus
-        };
-    }
-
-    setState(state) {
-        if (this.gameMode === 'online' && !this.isSimulation) {
-            this.detectStateChange(state);
-        }
-        
-        const oldGrid = this.grid;
-        
-        this.grid = state.grid;
-        this.currentPlayer = state.currentPlayer;
-        this.scores = state.scores;
-        this.nukes = state.nukes;
-        this.boosters = state.boosters;
-        this.bunkers = state.bunkers;
-        this.bonusTurn = state.bonusTurn;
-        this.ignoreIsolation = state.ignoreIsolation;
-        this.lastMove = state.lastMove;
-        this.gameActive = state.gameActive;
-        this.justEarnedBonus = state.justEarnedBonus;
-        
-        // Handle 2x2 Animation from Server
-        if (this.justEarnedBonus) {
-             const square = this.checkForSquare(this.lastMove.r, this.lastMove.c); 
-        }
-        
-        if (state.mapSize !== this.mapSize) {
-            this.mapSize = state.mapSize;
-            this.createBoard(this.mapSize); 
-        } else {
-             for(let r=0; r<this.mapSize; r++) {
-                for(let c=0; c<this.mapSize; c++) {
-                    const newVal = this.grid[r][c];
-                    const oldVal = oldGrid[r] ? oldGrid[r][c] : null;
-                    const isLast = this.lastMove && this.lastMove.r === r && this.lastMove.c === c;
-                    
-                    if (newVal !== oldVal || isLast) {
-                        this.updateCellVisual(r, c);
-                    }
-                }
-            }
-        }
-
-        this.updateUI();
-        if (!this.gameActive) this.showEndScreen();
-    }
-
-    detectStateChange(newState) {
-        if (newState.scores[1] > this.scores[1] || newState.scores[2] > this.scores[2]) {
-            this.sound.playScore();
-            this.logSystemMessage(`SCORE DETECTED: ${newState.scores[1]} - ${newState.scores[2]}`);
-            return; 
-        }
-        if (newState.lastMove && (!this.lastMove || newState.lastMove.r !== this.lastMove.r || newState.lastMove.c !== this.lastMove.c)) {
-             const movedCell = newState.grid[newState.lastMove.r][newState.lastMove.c];
-             const owner = this.getPlayerId(movedCell);
-             if (owner === 1) this.sound.playPlaceP1();
-             else if (owner === 2) this.sound.playPlaceP2();
-        }
-        if (newState.justEarnedBonus) {
-            this.sound.playBonus();
-        }
-    }
-
-    // --- CORE LOGIC HANDLER ---
-
-    applyMove(move) {
-        if (!this.gameActive) return;
-
-        if (this.gameMode === 'online') {
-             if (this.myPlayerId === 0) return; // Role not assigned yet
-             if (this.myPlayerId !== this.currentPlayer) {
-                 this.showToast("WAIT FOR SIGNAL");
-                 this.sound.playError();
-                 return;
-             }
-        }
-
-        this.isSimulation = false; 
-
-        if (move.type === 'place') {
-            this.internalExecutePlace(move.r, move.c);
-        } else if (move.type === 'nuke') {
-            this.internalExecuteNuke(move.r, move.c, move.boostCount);
-        } else if (move.type === 'craft') {
-            this.internalExecuteCraft();
-        }
-        
-        this.sendState();
-    }
-
-    // --- NEW AUTHORITATIVE STATE FUNCTION ---
-    sendState(force = false) {
-        const state = this.getState();
-        
-        if (this.gameMode === 'online') {
-            state.lastMover = this.myPlayerId;
-        }
-
-        if (this.gameMode === 'online' && socket && socket.readyState === 1) {
-            socket.send(JSON.stringify({
-                type: "state",
-                room: currentRoom,
-                state: state
-            }));
-        }
-
-        if (!force) {
-            this.updateUI();
-            this.autoSave();
-        }
-    }
-
-    handleCellClick(r, c) {
-        if (this.uiTargetingMode) {
-            this.applyMove({ type: 'nuke', r, c, boostCount: this.activeBoosters });
-        } else {
-            this.applyMove({ type: 'place', r, c });
-        }
-    }
-    
-    handleCellHover(r, c) {
-        this.clearPreview();
-        if (this.uiTargetingMode) {
-            const cells = this.getBlastCells(r, c, this.activeBoosters);
-            cells.forEach(pos => {
-                const cell = this.getCell(pos.r, pos.c);
-                if (cell) cell.classList.add('blast-preview');
-            });
-        }
-    }
-    
-    clearPreview() {
-        const cells = this.boardElement.querySelectorAll('.blast-preview');
-        cells.forEach(c => c.classList.remove('blast-preview'));
-    }
-
-    uiToggleNuke() {
-        if (this.gameMode === 'online' && this.currentPlayer !== this.myPlayerId) return;
-        
-        if (!this.uiTargetingMode && this.nukes[this.currentPlayer] <= 0) { 
-            this.showToast("SILOS EMPTY"); 
-            this.sound.playError(); 
-            return; 
-        }
-        this.uiTargetingMode = !this.uiTargetingMode;
-        if (!this.uiTargetingMode) {
-            this.activeBoosters = 0;
-            this.clearPreview();
-        }
-        this.updateUI();
-    }
-
-    uiToggleBoost() {
-        if (this.gameMode === 'online' && this.currentPlayer !== this.myPlayerId) return;
-        
-        const p = this.currentPlayer;
-        const available = this.boosters[p];
-        if (available <= 0) { this.showToast("NO BOOSTERS"); this.sound.playError(); return; }
-        
-        if (!this.uiTargetingMode) {
-             if (this.nukes[p] > 0) this.uiTargetingMode = true;
-             else { this.showToast("NEED NUKE TO BOOST"); this.sound.playError(); return; }
-        }
-        
-        this.activeBoosters++;
-        if (this.activeBoosters > available) this.activeBoosters = 0;
-        
-        this.clearPreview();
-        this.updateUI();
-    }
-    
-    craftNuke() {
-        const p = this.currentPlayer;
-        if (this.boosters[p] < 3) {
-            this.showToast("NEED 3 BOOSTERS");
-            this.sound.playError();
-            return;
-        }
-        this.applyMove({ type: 'craft' });
-    }
-
-    // --- LOGIC INTERNALS ---
-
-    internalExecutePlace(r, c) {
-        if (this.grid[r][c] !== STATE.EMPTY) { if(!this.isSimulation) this.sound.playError(); return; }
-        if (this.bonusTurn && !this.ignoreIsolation && !this.isIsolated(r, c)) {
-            if(!this.isSimulation) this.showToast("BONUS PIECE MUST BE ISOLATED");
-            if(!this.isSimulation) this.sound.playError();
-            return;
-        }
-
-        const prevMove = this.lastMove;
-        this.grid[r][c] = this.currentPlayer === 1 ? STATE.P1 : STATE.P2;
-        this.lastMove = { r, c };
-        
-        if (!this.isSimulation) {
-            if (this.currentPlayer === 1) this.sound.playPlaceP1();
-            else this.sound.playPlaceP2();
-            this.updateCellVisual(r, c); 
-            if (prevMove) this.updateCellVisual(prevMove.r, prevMove.c); // Update old
-        }
-
-        this.resolvePostMove(r, c);
-    }
-
-    getBlastCells(r, c, boostCount) {
-        const affected = [];
-        const radius = 1 + boostCount;
-        for (let dr = -radius; dr <= radius; dr++) {
-            for (let dc = -radius; dc <= radius; dc++) {
-                if (Math.abs(dr) + Math.abs(dc) <= radius && this.isValid(r+dr, c+dc)) {
-                    affected.push({ r: r+dr, c: c+dc });
-                }
-            }
-        }
-        return affected;
-    }
-
-    internalExecuteNuke(r, c, boostCount) {
-        if (this.nukes[this.currentPlayer] < 1) return;
-        
-        const boosted = boostCount > 0;
-        
-        if (!boosted) {
-            const targetState = this.grid[r][c];
-            if (this.getPlayerId(targetState) !== this.currentPlayer) {
-                if(!this.isSimulation) { this.showToast("INVALID TARGET"); this.sound.playError(); }
-                return;
-            }
-        }
-        
-        const affected = this.getBlastCells(r, c, boostCount);
-
-        if (!this.isSimulation) {
-            this.sound.playNuke();
-            this.logSystemMessage(boosted ? "BOOSTED NUKE LAUNCHED" : "NUKE LAUNCHED");
-            document.querySelector('.board-container').classList.add('impact');
-            setTimeout(() => document.querySelector('.board-container').classList.remove('impact'), 400);
-        }
-        
-        affected.forEach(pos => {
-            const s = this.grid[pos.r][pos.c];
-            const isBunker = (s >= 5 && s <= 8);
-            if (!isBunker || boosted) {
-                const owner = this.getPlayerId(s);
-                if (isBunker && owner > 0) this.bunkers[owner]--;
-                this.grid[pos.r][pos.c] = STATE.CRATER;
-            }
-        });
-
-        this.nukes[this.currentPlayer]--;
-        this.boosters[this.currentPlayer] -= boostCount;
-        
-        this.uiTargetingMode = false;
-        this.activeBoosters = 0;
-        this.bonusTurn = false;
-        this.clearPreview();
-        
-        if (!this.isSimulation) this.renderBoard();
-
-        this.switchTurn();
-    }
-    
-    internalExecuteCraft() {
-        const p = this.currentPlayer;
-        if (this.boosters[p] >= 3) {
-            this.boosters[p] -= 3;
-            this.nukes[p] += 1;
-            if(!this.isSimulation) {
-                this.sound.playCraft();
-                this.showToast("CRAFTED: 1 NUKE");
-            }
-        }
-    }
-
-    resolvePostMove(r, c) {
-        const player = this.currentPlayer;
-        const scored = this.checkScoring(r, c);
-        
-        if (this.checkBoardFull()) { this.endRound("FULL"); return; }
-        if (scored) {
-            this.bonusTurn = false;
-            this.ignoreIsolation = false;
-            if(!this.isSimulation) this.sound.playScore();
-            if (this.scores[player] >= this.winningScore) { this.endRound("SCORE"); return; }
-            this.switchTurn();
-            return;
-        }
-
-        let triggers = [];
-        let earnedBonus = false;
-
-        const plus = this.checkForPlus(r, c);
-        if (plus) {
-            this.boosters[player]++;
-            if(!this.isSimulation) this.sound.playBunker();
-            plus.forEach(pos => {
-                const s = this.grid[pos.r][pos.c];
-                const wasBunker = (s >= 5 && s <= 8);
-                if (!wasBunker) this.bunkers[player]++;
-                const scored = (s === 3 || s === 4 || s === 7 || s === 8);
-                this.grid[pos.r][pos.c] = player === 1 ? (scored ? 7 : 5) : (scored ? 8 : 6);
+            <div class="panel" style="flex-grow: 1; display: flex; flex-direction: column;">
+                <div class="panel-title">TACTICS</div>
+                <button id="btn-nuke" class="nuke-btn" onclick="app.toggleNukeMode()">ARM NUKE</button>
+                <button id="btn-craft" class="craft-btn" onclick="app.sendCraft()">CRAFT NUKE (3 BST)</button>
                 
-                if(!this.isSimulation) {
-                    this.updateCellVisual(pos.r, pos.c);
-                    const cell = this.getCell(pos.r, pos.c);
-                    const piece = cell.querySelector('.piece');
-                    if (piece) piece.classList.add('forming');
-                }
-            });
-            triggers.push("BUNKERS ESTABLISHED");
-        }
+                <div id="logs"></div>
+                <input type="text" id="chat-input" placeholder="COMMS..." onkeypress="app.handleChat(event)" style="width: 100%; margin: 5px 0 0 0; font-size: 0.8rem;">
+            </div>
+        </div>
 
-        if (!this.bonusTurn) {
-            const square = this.checkForSquare(r, c);
-            if (square) {
-                earnedBonus = true;
-                this.justEarnedBonus = true; // Set Flag
-                if(!this.isSimulation) {
-                    this.sound.playBonus();
-                    square.forEach(pos => {
-                         const cell = this.getCell(pos.r, pos.c);
-                         const piece = cell.querySelector('.piece');
-                         if (piece) piece.classList.add('square-flash');
-                    });
-                }
-                triggers.push("BONUS TURN");
-            }
-        }
+        <!-- GAME BOARD -->
+        <div id="board-container">
+            <div id="game-board"></div>
+        </div>
 
-        if (triggers.length && !this.isSimulation) this.showToast(triggers.join(" + "));
+    </div>
 
-        if (earnedBonus) {
-            this.bonusTurn = true;
-            this.checkIsolationAvailability(); 
-            this.refreshGridVisuals(); 
-            return;
-        } 
+    <script>
+        // --- CONFIGURATION ---
+        // Automatically switch between ws:// (local) and wss:// (render https)
+        const HOST = "ticktack-nuke-server.onrender.com";
+        const PROTOCOL = location.protocol === 'https:' ? 'wss' : 'ws';
+        const SERVER_URL = `${PROTOCOL}://${HOST}`;
         
-        if (this.bonusTurn) {
-            this.bonusTurn = false;
-            this.ignoreIsolation = false;
-            this.refreshGridVisuals();
-            this.switchTurn();
-        } else {
-            this.switchTurn();
-        }
-    }
+        const MAP_SIZE = 15;
 
-    switchTurn() {
-        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
-        this.uiTargetingMode = false;
-        this.activeBoosters = 0;
-        this.checkIsolationAvailability();
-    }
+        // --- ENUMS (MUST MATCH SERVER) ---
+        const STATE = {
+            EMPTY: 0,
+            P1: 1, P2: 2,
+            P1_SCORED: 3, P2_SCORED: 4,
+            P1_BUNKER: 5, P2_BUNKER: 6,
+            P1_BUNKER_SCORED: 7, P2_BUNKER_SCORED: 8,
+            CRATER: 9
+        };
 
-    // --- HELPERS ---
-
-    getPlayerId(s) {
-        if ([1,3,5,7].includes(s)) return 1;
-        if ([2,4,6,8].includes(s)) return 2;
-        return 0;
-    }
-    
-    isActivePiece(s) { return (s === 1 || s === 2 || s === 5 || s === 6); }
-    isValid(r, c) { return r >= 0 && r < this.mapSize && c >= 0 && c < this.mapSize; }
-
-    isIsolated(r, c) {
-        for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-                if (dr === 0 && dc === 0) continue;
-                if (this.isValid(r+dr, c+dc)) {
-                    const s = this.grid[r+dr][c+dc];
-                    if (s !== STATE.EMPTY && s !== STATE.CRATER) return false;
-                }
+        // --- AUDIO ENGINE ---
+        const AudioSys = {
+            ctx: null,
+            init() {
+                if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            },
+            play(freq, type, dur, vol = 0.1) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + dur);
+            },
+            click() { this.play(800, 'square', 0.05, 0.05); },
+            error() { this.play(150, 'sawtooth', 0.3, 0.1); },
+            nuke() { 
+                this.play(100, 'sawtooth', 0.8, 0.2); 
+                setTimeout(() => this.play(50, 'square', 1.0, 0.2), 100);
+            },
+            turn() { this.play(600, 'sine', 0.2, 0.1); },
+            win() { 
+                [400, 500, 600, 800].forEach((f, i) => setTimeout(() => this.play(f, 'square', 0.2, 0.1), i*100));
             }
-        }
-        return true;
-    }
+        };
 
-    checkIsolationAvailability() {
-        if (!this.bonusTurn) return;
-        let possible = false;
-        for (let r=0; r<this.mapSize; r++) {
-            for (let c=0; c<this.mapSize; c++) {
-                if (this.grid[r][c] === STATE.EMPTY && this.isIsolated(r, c)) { possible = true; break; }
-            }
-            if (possible) break;
-        }
-        this.ignoreIsolation = !possible;
-    }
+        // --- MAIN APP LOGIC ---
+        class GameClient {
+            constructor() {
+                this.ws = null;
+                this.myRole = null; // 1, 2, or "spectator"
+                this.gameState = null;
+                this.nukeMode = false;
+                
+                // Elements cache
+                this.els = {
+                    board: document.getElementById('game-board'),
+                    overlay: document.getElementById('overlay'),
+                    status: document.getElementById('conn-status'),
+                    app: document.getElementById('app'),
+                    turn: document.getElementById('turn-indicator'),
+                    btnNuke: document.getElementById('btn-nuke'),
+                    logs: document.getElementById('logs'),
+                    stats: {
+                        1: {
+                            score: document.getElementById('p1-score'),
+                            nuke: document.getElementById('p1-nuke'),
+                            boost: document.getElementById('p1-boost'),
+                            bunker: document.getElementById('p1-bunkers')
+                        },
+                        2: {
+                            score: document.getElementById('p2-score'),
+                            nuke: document.getElementById('p2-nuke'),
+                            boost: document.getElementById('p2-boost'),
+                            bunker: document.getElementById('p2-bunkers')
+                        }
+                    }
+                };
 
-    checkForSquare(r, c) {
-        const p = this.currentPlayer;
-        const offsets = [[-1,-1], [-1,0], [0,-1], [0,0]];
-        for (let [dr, dc] of offsets) {
-            let match = true;
-            let coords = [];
-            for (let i=0; i<2; i++) {
-                for (let j=0; j<2; j++) {
-                    const nr = r+dr+i, nc = c+dc+j;
-                    if (!this.isValid(nr, nc)) { match = false; break; }
-                    const s = this.grid[nr][nc];
-                    if (this.getPlayerId(s) !== p || !this.isActivePiece(s)) { match = false; break; }
-                    coords.push({r:nr, c:nc});
-                }
-                if (!match) break;
+                this.initGrid();
             }
-            if (match) return coords;
-        }
-        return null;
-    }
 
-    checkForPlus(r, c) {
-        const p = this.currentPlayer;
-        const potential = [[0,0], [0,1], [0,-1], [1,0], [-1,0]];
-        for (let [dr, dc] of potential) {
-            const cr = r+dr, cc = c+dc;
-            if (!this.isValid(cr, cc)) continue;
-            const cs = this.grid[cr][cc];
-            if ([5,6,7,8].includes(cs)) continue; 
-            if (this.getPlayerId(cs) !== p || !this.isActivePiece(cs)) continue;
-            const arms = [[0,1], [0,-1], [1,0], [-1,0]];
-            if (arms.every(([ar, ac]) => {
-                const tr = cr+ar, tc = cc+ac;
-                if (!this.isValid(tr, tc)) return false;
-                const ts = this.grid[tr][tc];
-                return this.getPlayerId(ts) === p && this.isActivePiece(ts);
-            })) {
-                return [[0,0], ...arms].map(([ar, ac]) => ({ r: cr+ar, c: cc+ac }));
-            }
-        }
-        return null;
-    }
-
-    checkScoring(r, c) {
-        const p = this.currentPlayer;
-        const directions = [[0,1], [1,0], [1,1], [1,-1]];
-        let found = false;
-        directions.forEach(([dr, dc]) => {
-            let line = [];
-            for (let i=-4; i<=4; i++) {
-                const nr = r+dr*i, nc = c+dc*i;
-                if (this.isValid(nr, nc)) line.push({ r: nr, c: nc, s: this.grid[nr][nc] });
-            }
-            for (let i=0; i <= line.length - 5; i++) {
-                const seg = line.slice(i, i+5);
-                if (seg.every(cell => this.getPlayerId(cell.s) === p && ![3,4,7,8].includes(cell.s))) {
-                    this.applyScoreSegment(seg);
-                    found = true;
-                    break; 
+            initGrid() {
+                this.els.board.innerHTML = '';
+                for (let r = 0; r < MAP_SIZE; r++) {
+                    for (let c = 0; c < MAP_SIZE; c++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell';
+                        cell.dataset.r = r;
+                        cell.dataset.c = c;
+                        // Mobile touch support vs Click
+                        cell.addEventListener('mousedown', (e) => this.handleInput(r, c));
+                        this.els.board.appendChild(cell);
+                    }
                 }
             }
-        });
-        return found;
-    }
 
-    applyScoreSegment(seg) {
-        this.scores[this.currentPlayer]++;
-        if (this.scores[this.currentPlayer] === 1) this.nukes[this.currentPlayer]++;
-        else if (this.scores[this.currentPlayer] === 2) this.nukes[this.currentPlayer === 1 ? 2 : 1]++;
-        
-        seg.forEach(cell => {
-            const s = this.grid[cell.r][cell.c];
-            if (s === 1) this.grid[cell.r][cell.c] = 3;
-            else if (s === 2) this.grid[cell.r][cell.c] = 4;
-            else if (s === 5) this.grid[cell.r][cell.c] = 7;
-            else if (s === 6) this.grid[cell.r][cell.c] = 8;
-            this.updateCellVisual(cell.r, cell.c);
-        });
-    }
+            connect() {
+                const roomInput = document.getElementById('room-input');
+                const roomId = roomInput.value.trim().toUpperCase() || "WAR1";
+                
+                this.els.status.innerText = "SEARCHING FOR SIGNAL...";
+                AudioSys.init();
 
-    checkBoardFull() { return this.grid.every(row => row.every(c => c !== STATE.EMPTY)); }
+                try {
+                    this.ws = new WebSocket(SERVER_URL);
+                } catch (e) {
+                    this.els.status.innerText = "INVALID URL CONFIG";
+                    return;
+                }
 
-    createBoard(size) {
-        this.mapSize = size;
-        this.grid = Array(size).fill().map(() => Array(size).fill(0));
-        this.renderBoard();
-    }
+                this.ws.onopen = () => {
+                    this.els.status.innerText = "UPLINK ESTABLISHED";
+                    this.ws.send(JSON.stringify({ type: 'join', room: roomId }));
+                };
 
-    renderBoard() {
-        if (!this.boardElement) return;
-        this.boardElement.innerHTML = '';
-        this.boardElement.style.gridTemplateColumns = `repeat(${this.mapSize}, 1fr)`;
-        for (let r=0; r<this.mapSize; r++) {
-            for (let c=0; c<this.mapSize; c++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell';
-                cell.onclick = () => this.handleCellClick(r, c);
-                cell.onmouseenter = () => this.handleCellHover(r, c);
-                cell.onmouseleave = () => this.clearPreview();
-                this.boardElement.appendChild(cell);
-                this.updateCellVisual(r, c);
+                this.ws.onmessage = (event) => this.handleMsg(JSON.parse(event.data));
+                
+                this.ws.onclose = () => {
+                    this.els.status.innerText = "SIGNAL LOST - REFRESH";
+                    this.log("CONNECTION LOST", true);
+                    this.els.overlay.classList.remove('hidden');
+                };
+
+                this.ws.onerror = () => {
+                    this.els.status.innerText = "CONNECTION FAILED";
+                };
+            }
+
+            handleMsg(data) {
+                switch(data.type) {
+                    case 'WELCOME':
+                        this.myRole = data.role;
+                        this.els.overlay.classList.add('hidden');
+                        this.els.app.classList.remove('hidden');
+                        this.log(`CONNECTED AS ${this.myRole === 1 ? 'PLAYER 1' : this.myRole === 2 ? 'PLAYER 2' : 'SPECTATOR'}`);
+                        break;
+                    case 'STATE_UPDATE':
+                        this.updateState(data.state);
+                        break;
+                    case 'ERROR':
+                        this.log(data.msg, true);
+                        AudioSys.error();
+                        break;
+                    case 'chat':
+                        this.log(`${data.role === 1 ? 'P1' : 'P2'}: ${data.msg}`, false, true);
+                        break;
+                }
+            }
+
+            handleInput(r, c) {
+                if (!this.gameState) return;
+                
+                // Safety check: Don't allow clicks if game over or spectator
+                if (!this.gameState.gameActive) return;
+                
+                // Turn Check (Client side prediction/feedback)
+                if (this.gameState.currentPlayer !== this.myRole && !this.gameState.bonusTurn) {
+                    // AudioSys.error(); // Optional: Beep on wrong turn
+                    return;
+                }
+
+                if (this.nukeMode) {
+                    const myNukes = this.gameState.nukes[this.myRole];
+                    const myBoost = this.gameState.boosters[this.myRole];
+                    
+                    if (myNukes > 0) {
+                        let boosted = false;
+                        if (myBoost > 0) {
+                            boosted = confirm("DEPLOY MEGA-NUKE? (Consumes 1 Booster)");
+                        }
+                        
+                        this.send({ type: 'NUKE', r, c, boosted });
+                        this.toggleNukeMode(); // Disable after shot
+                        AudioSys.nuke();
+                    } else {
+                        this.log("NO NUCLEAR ASSETS");
+                        AudioSys.error();
+                        this.toggleNukeMode();
+                    }
+                } else {
+                    AudioSys.click();
+                    this.send({ type: 'PLACE', r, c });
+                }
+            }
+
+            send(payload) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(payload));
+                }
+            }
+
+            // --- GAMEPLAY ACTIONS ---
+            toggleNukeMode() {
+                this.nukeMode = !this.nukeMode;
+                this.els.btnNuke.classList.toggle('active', this.nukeMode);
+                this.els.btnNuke.innerText = this.nukeMode ? "SELECT TARGET" : "ARM NUKE";
+            }
+
+            sendCraft() {
+                const myBoost = this.gameState.boosters[this.myRole];
+                if (myBoost >= 3) {
+                    this.send({ type: 'CRAFT' });
+                } else {
+                    this.log("INSUFFICIENT BOOSTERS");
+                    AudioSys.error();
+                }
+            }
+
+            handleChat(e) {
+                if (e.key === 'Enter') {
+                    const input = document.getElementById('chat-input');
+                    const text = input.value.trim();
+                    if (text) {
+                        this.send({ type: 'chat', msg: text });
+                        input.value = '';
+                    }
+                }
+            }
+
+            // --- RENDERER ---
+            updateState(state) {
+                // Audio Cue for Turn Change
+                if (this.gameState && this.gameState.currentPlayer !== state.currentPlayer) {
+                    if (state.currentPlayer === this.myRole) AudioSys.turn();
+                }
+                
+                if (state.winner && (!this.gameState || !this.gameState.winner)) {
+                    AudioSys.win();
+                    this.log(`GAME OVER - PLAYER ${state.winner} WINS!`);
+                }
+
+                this.gameState = state;
+                this.renderGrid();
+                this.renderUI();
+            }
+
+            renderGrid() {
+                const cells = this.els.board.children;
+                for (let r = 0; r < MAP_SIZE; r++) {
+                    for (let c = 0; c < MAP_SIZE; c++) {
+                        const idx = r * MAP_SIZE + c;
+                        const cell = cells[idx];
+                        const val = this.gameState.grid[r][c];
+                        
+                        // Clear classes but keep 'cell'
+                        cell.className = 'cell';
+
+                        if (val === STATE.P1) cell.classList.add('p1');
+                        if (val === STATE.P2) cell.classList.add('p2');
+                        if (val === STATE.P1_SCORED) cell.classList.add('p1-scored');
+                        if (val === STATE.P2_SCORED) cell.classList.add('p2-scored');
+                        if (val === STATE.P1_BUNKER || val === STATE.P1_BUNKER_SCORED) cell.classList.add('bunker', 'p1');
+                        if (val === STATE.P2_BUNKER || val === STATE.P2_BUNKER_SCORED) cell.classList.add('bunker', 'p2');
+                        if (val === STATE.CRATER) cell.classList.add('crater');
+                    }
+                }
+            }
+
+            renderUI() {
+                // Update Stats
+                [1, 2].forEach(p => {
+                    this.els.stats[p].score.innerText = this.gameState.scores[p];
+                    this.els.stats[p].nuke.innerText = this.gameState.nukes[p];
+                    this.els.stats[p].boost.innerText = this.gameState.boosters[p];
+                    this.els.stats[p].bunker.innerText = this.gameState.bunkers[p];
+                });
+
+                // Update Turn Indicator
+                const turnEl = this.els.turn;
+                if (this.gameState.winner) {
+                    turnEl.innerText = `VICTORY: PLAYER ${this.gameState.winner}`;
+                    turnEl.style.color = "#fff";
+                    turnEl.style.background = this.gameState.winner === 1 ? 'var(--p1-neon)' : 'var(--p2-neon)';
+                } else if (this.gameState.bonusTurn) {
+                    turnEl.innerText = `BONUS TURN (P${this.gameState.currentPlayer})`;
+                    turnEl.style.color = "var(--text-rare)";
+                    turnEl.style.background = "#050505";
+                } else {
+                    const isMe = this.gameState.currentPlayer === this.myRole;
+                    turnEl.innerText = isMe ? "YOUR COMMAND" : `WAITING FOR P${this.gameState.currentPlayer}...`;
+                    turnEl.style.color = this.gameState.currentPlayer === 1 ? 'var(--p1-neon)' : 'var(--p2-neon)';
+                    turnEl.style.background = "#050505";
+                }
+
+                // Button State
+                const myRole = this.myRole;
+                const isMyTurn = this.gameState.currentPlayer === myRole || (this.gameState.bonusTurn && this.gameState.currentPlayer === myRole);
+                const hasNukes = this.gameState.nukes[myRole] > 0;
+                const hasBoosts = this.gameState.boosters[myRole] >= 3;
+
+                this.els.btnNuke.disabled = !isMyTurn || !hasNukes;
+                document.getElementById('btn-craft').disabled = !isMyTurn || !hasBoosts;
+                
+                if (!hasNukes && this.nukeMode) this.toggleNukeMode();
+            }
+
+            log(msg, isErr = false, isChat = false) {
+                const div = document.createElement('div');
+                div.className = 'log-msg';
+                if (isErr) div.classList.add('log-err');
+                else if (isChat) div.classList.add('log-chat');
+                else div.classList.add('log-sys');
+                
+                div.innerText = `> ${msg}`;
+                this.els.logs.prepend(div);
+                
+                if (this.els.logs.children.length > 50) this.els.logs.lastChild.remove();
             }
         }
-    }
 
-    refreshGridVisuals() {
-        for(let r=0; r<this.mapSize; r++) {
-            for(let c=0; c<this.mapSize; c++) {
-                this.updateCellVisual(r, c);
-            }
-        }
-    }
+        // --- START ---
+        const app = new GameClient();
 
-    updateCellVisual(r, c, animateBunker = false) {
-        const cell = this.getCell(r, c);
-        if (!cell) return;
-        const s = this.grid[r][c];
-        
-        const hasPreview = cell.classList.contains('blast-preview');
-        cell.className = 'cell';
-        if (hasPreview) cell.classList.add('blast-preview');
-
-        cell.innerHTML = '';
-        
-        if (s === STATE.CRATER) { 
-            cell.classList.add('crater'); 
-            return; 
-        }
-        
-        if (s === STATE.EMPTY) {
-            // Apply invalid highlight if bonus turn requires isolation and this cell fails
-            // OR if cell is occupied (since this function now handles the red background logic for ALL cells)
-            if (this.bonusTurn && !this.ignoreIsolation) {
-                if (!this.isIsolated(r, c)) cell.classList.add('invalid-isolation');
-            }
-            if (this.uiTargetingMode && !this.activeBoosters) cell.classList.add('invalid-target');
-            return;
-        }
-
-        const p = document.createElement('div');
-        p.className = 'piece';
-        const owner = this.getPlayerId(s);
-        p.classList.add(owner === 1 ? 'p1' : 'p2');
-        if ([3,4,7,8].includes(s)) p.classList.add('scored');
-        if ([5,6,7,8].includes(s)) p.classList.add('bunker');
-        if (this.lastMove?.r === r && this.lastMove?.c === c) p.classList.add('last-move');
-        cell.appendChild(p);
-        
-        // Also highlight occupied cells during restricted bonus turn
-        if (this.bonusTurn && !this.ignoreIsolation) {
-             cell.classList.add('invalid-isolation');
-        }
-
-        if (this.uiTargetingMode && !this.activeBoosters && owner !== this.currentPlayer) {
-            cell.classList.add('invalid-target');
-        }
-    }
-
-    getCell(r, c) { return this.boardElement?.children[r * this.mapSize + c]; }
-
-    updateUI() {
-        const p = this.currentPlayer;
-        document.getElementById('p1-panel').classList.toggle('active-turn', p === 1);
-        document.getElementById('p2-panel').classList.toggle('active-turn', p === 2);
-        
-        // Remove old pulse classes
-        document.getElementById('p1-panel').classList.remove('bonus-pulse');
-        document.getElementById('p2-panel').classList.remove('bonus-pulse');
-        
-        if (this.justEarnedBonus) {
-            const panel = document.getElementById(p === 1 ? 'p1-panel' : 'p2-panel');
-            void panel.offsetWidth; // Force Reflow Hack
-            panel.classList.add('bonus-pulse');
-            this.justEarnedBonus = false; 
-        }
-
-        document.getElementById('score1').textContent = this.scores[1];
-        document.getElementById('score2').textContent = this.scores[2];
-        document.getElementById('nuke1').textContent = this.nukes[1];
-        document.getElementById('nuke2').textContent = this.nukes[2];
-        document.getElementById('boost1').textContent = this.boosters[1];
-        document.getElementById('boost2').textContent = this.boosters[2];
-        document.getElementById('bunker1').textContent = this.bunkers[1];
-        document.getElementById('bunker2').textContent = this.bunkers[2];
-
-        let txt = "";
-        if (this.gameMode === 'online') {
-            txt = (p === this.myPlayerId) ? "YOUR TURN" : "ENEMY TURN";
-        } else {
-            txt = p === 1 ? "COMMANDER A // AWAITING INPUT" : "COMMANDER B // AWAITING INPUT";
-        }
-
-        let statusClass = "status-text";
-        if (this.bonusTurn) { txt = "BONUS TURN ACTIVE"; statusClass = "status-bonus"; }
-        else if (this.uiTargetingMode) { txt = this.activeBoosters > 0 ? `TARGETING BOOSTED (+${this.activeBoosters})` : "TARGETING STANDARD ICBM..."; statusClass = "status-bonus"; }
-        
-        this.statusText.textContent = txt;
-        this.statusText.className = statusClass;
-        
-        this.statusText.style.color = (this.bonusTurn || this.uiTargetingMode) ? "var(--text-boost)" : (p === 1 ? "var(--text-main)" : "var(--text-sec)");
-
-        const iso = this.isoIndicator;
-        if (this.bonusTurn) {
-            iso.textContent = this.ignoreIsolation ? "ISO: IMPOSSIBLE; PLACE FREELY" : "ISO: REQUIRED";
-            iso.style.color = "var(--text-boost)";
-            iso.classList.toggle('available', this.bonusTurn && !this.ignoreIsolation);
-        } else {
-            iso.textContent = "";
-        }
-
-        const bn = document.getElementById('btn-nuke');
-        bn.disabled = this.nukes[p] <= 0 || (this.gameMode==='online' && this.myPlayerId !== p);
-        bn.innerText = this.uiTargetingMode ? "CANCEL" : "LAUNCH ICBM";
-        bn.classList.toggle('active', this.uiTargetingMode);
-
-        const bb = document.getElementById('btn-boost');
-        bb.disabled = this.boosters[p] <= 0 || (this.gameMode==='online' && this.myPlayerId !== p);
-        bb.innerText = this.activeBoosters > 0 ? `BOOST (+${this.activeBoosters})` : "ENGAGE BOOSTER";
-        bb.classList.toggle('active', this.activeBoosters > 0);
-        
-        const bc = document.getElementById('btn-craft');
-        bc.disabled = this.boosters[p] < 3 || (this.gameMode==='online' && this.myPlayerId !== p);
-
-        if (this.gameMode === 'online' && this.myPlayerId !== p) {
-            this.boardElement.classList.add('blocked');
-        } else {
-            this.boardElement.classList.remove('blocked');
-        }
-        
-        if (this.uiTargetingMode) this.boardElement.classList.add(this.activeBoosters > 0 ? 'targeting-boosted' : 'targeting');
-        else this.boardElement.classList.remove('targeting', 'targeting-boosted');
-    }
-
-    showToast(m) {
-        const t = this.toast;
-        t.textContent = m; t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 2000);
-    }
-
-    endRound(reason) {
-        this.gameActive = false;
-        this.showEndScreen(reason);
-    }
-
-    showEndScreen(reason) {
-        const h2 = document.getElementById('winner-title');
-        let win = "DRAW";
-        if (this.scores[1] > this.scores[2]) win = "COMMANDER A";
-        else if (this.scores[2] > this.scores[1]) win = "COMMANDER B";
-        else if (this.bunkers[1] > this.bunkers[2]) win = "COMMANDER A (BUNKERS)";
-        else if (this.bunkers[2] > this.bunkers[1]) win = "COMMANDER B (BUNKERS)";
-        h2.textContent = win === "DRAW" ? "STALEMATE" : `${win} VICTORIOUS`;
-        document.getElementById('overlay').classList.add('visible');
-    }
-
-    resetRound() {
-        this.scores = {1:0, 2:0}; this.nukes = {1:0, 2:0}; this.boosters = {1:0, 2:0}; this.bunkers = {1:0, 2:0};
-        this.currentPlayer = 1; this.bonusTurn = false; this.lastMove = null; this.gameActive = true;
-        this.uiTargetingMode = false; this.activeBoosters = 0;
-        this.createBoard(this.mapSize);
-        this.updateUI();
-        document.getElementById('overlay').classList.remove('visible');
-        this.logSystemMessage("WAR GAMES RESET");
-    }
-
-    setMapSize(s) { this.mapSize = s; this.resetRound(); document.getElementById('settings-overlay').classList.remove('visible'); }
-    setScale(v) { document.getElementById('app-root').style.transform = `scale(${v})`; }
-    openSettings() { document.getElementById('settings-overlay').classList.add('visible'); }
-    hideOverlay() { document.getElementById('overlay').classList.remove('visible'); }
-
-    saveToLocal() { 
-        if (this.gameMode === 'online') { this.showToast("SAVE DISABLED IN ONLINE"); return; }
-        this.autoSave();
-        this.showToast("LOCAL STATE SAVED"); 
-    }
-    loadFromLocal() { 
-        if (this.gameMode === 'online') { this.showToast("LOAD DISABLED IN ONLINE"); return; }
-        const s = localStorage.getItem('con5_v9_save'); if (s) { this.setState(JSON.parse(s)); this.showToast("LOCAL STATE LOADED"); return true; } return false; 
-    }
-    
-    autoSave() {
-         if (this.gameMode !== 'hotseat') return;
-         localStorage.setItem('con5_v9_save', JSON.stringify(this.getState()));
-    }
-}
-
-const game = new Connect5();
-// initMultiplayer(game); // Removed direct init
-</script>
+    </script>
 </body>
 </html>
